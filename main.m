@@ -1,4 +1,4 @@
-function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,EThreshold,relaxation,Nthreads,space,rebuild)
+function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,rebuild)
 
 % main function that finds the optimal stimulation given the pre-processed
 % neuroimages in pat_path. The stimulation target and constraint are
@@ -17,7 +17,9 @@ function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,cons
 % atlas         :   (str) atlas name (must be identical to leadDBS)
 %                   Optional. Default = DISTAL Minimal (Ewert 2017)
 % target_names       :   (cell of str) target names. 
-%                   Optional. Default = {STN motor}                 
+%                   Optional. Default = {STN motor}      
+% optischeme    :   Optimization scheme, either "Conservative" or "Minimum
+%                   coverage"
 % constraint_names   :   (cell of str) constraint names.
 %                   Optional. Default = {STN limbic, STN associative}
 % EThreshold    : (int)
