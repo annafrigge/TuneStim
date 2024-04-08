@@ -261,7 +261,8 @@ for i = 1:length(hand)
 
 
     %write results to .txt
-    fid=fopen(append(pat_path,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(relaxation),'.txt'),'w');
+    mkdir([pat_path,'Suggestions'])
+    fid=fopen(append(pat_path,Suggestions,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(relaxation),'.txt'),'w');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \n\n','%','%','%');
 
     a = cell(length(idx),6);

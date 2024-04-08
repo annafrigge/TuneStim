@@ -35,7 +35,7 @@ elseif strcmp(optischeme,'mincov')
         b = -EFobj_target;
         sort_EF_target = sort(EnormTarget{m},'descend');
         n = length(sort_EF_target);
-        pTarget = 1-relaxation/100; % how much of target points covered
+        pTarget = relaxation/100; % how much of target points covered
         nindex = floor(n*pTarget);
         A = -sort_EF_target(nindex);
         f = sum(EnormConstraint{m}); % minimizing constraint coverage
