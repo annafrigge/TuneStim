@@ -1,3 +1,4 @@
 *.mph
 profile_results/
 sbatchOutput/
+Comsol/*.mph
