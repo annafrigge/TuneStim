@@ -1,5 +1,5 @@
-function run_optimization(optischeme,EFobj_target,EnormTarget,...
-                          EFobj_constraint,EnormConstraint)
+function [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
+                          EFobj_constraint,EnormConstraint, relaxation)
 
 cou = eye(19); % adjust to number of tested configurations!
 alpha      = zeros(1,size(cou,1));
@@ -14,7 +14,7 @@ lower_bound = 0;
 upper_bound = 10;
 
 
-if strcmp(optischeme,'Conservative')
+if strcmp(optischeme,'conservative')
     for m=1:length(alpha)
 
         b = EFobj_constraint;
@@ -30,7 +30,7 @@ if strcmp(optischeme,'Conservative')
         [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
     end
 
-elseif strcmp(optischeme,'Minimum coverage')
+elseif strcmp(optischeme,'mincov')
     for m=(1:length(alpha))
         b = -EFobj_target;
         sort_EF_target = sort(EnormTarget{m},'descend');
