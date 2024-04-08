@@ -1,0 +1,56 @@
+function plot_lead(head,tail,VTAfig,lead,orientation)
+%plot cylinder
+
+    leadvector=(tail-head)/norm(head-tail);
+    vlead0=[0,0,1];
+    r = vrrotvec(vlead0,leadvector);
+    Rotation = vrrotvec2mat(r);
+
+    Rotation_z =rotz(orientation);
+    if strcmp(lead,'S:t Jude 1331')
+        load("Leads/stjude_directed_short.mat")
+    elseif strcmp(lead,'Boston Scientific 2202')
+        load("Leads/boston_vercise_directed.mat")
+
+    end
+
+    N_insulation = length(electrode.insulation);
+    tilt_insulation_points = cell(N_insulation);
+
+    
+    N_electrode = length(electrode.contacts);
+    tilt_electrode_points = cell(N_electrode);
+
+    %tilt lead axis
+    
+    
+
+    for i=1:N_electrode
+        electrode_points = electrode.contacts(i).vertices;
+        N_points = length(electrode_points);
+        for j=1:N_points
+            
+            electrode.contacts(i).vertices(j,1:3) = 10^(-3)*(Rotation*Rotation_z*(electrode_points(j,1:3))')'+head- 2.25e-3 * leadvector;
+            
+        end
+    
+        patch(VTAfig,electrode.contacts(i),'EdgeColor','none','FaceColor',[0.4,0.4,0.4],'HandleVisibility','off')
+        hold(VTAfig,'on')
+    end
+
+    for i=1:N_insulation
+        insulation_points = electrode.insulation(i).vertices;
+        N_points = length(insulation_points);
+        for j=1:N_points
+            
+            electrode.insulation(i).vertices(j,1:3) = 10^(-3)*(Rotation*(insulation_points(j,1:3))')'+head- 2.25e-3 * leadvector;
+            
+        end
+
+      
+        patch(VTAfig,electrode.insulation(i),'EdgeColor','none','FaceColor',[0.8,0.8,0.8],'HandleVisibility','off')
+        hold(VTAfig,'on')
+    end
+    
+   
+end
