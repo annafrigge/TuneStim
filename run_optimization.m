@@ -1,7 +1,6 @@
 function [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
-                          EFobj_constraint,EnormConstraint, relaxation)
+                          EFobj_constraint,EnormConstraint, relaxation,cou)
 
-cou = eye(19); % adjust to number of tested configurations!
 alpha      = zeros(1,size(cou,1));
 J           = zeros(1,size(cou,1));
 

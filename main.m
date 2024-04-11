@@ -76,10 +76,10 @@ EFobj_constraint = 0.87*EThreshold;  % safety margin for constraint areas
 
 
 %define patient directory and root directory
-str_array= strsplit(pat_path,'/');
+str_array= strsplit(pat_path,filesep);
 patient_name = str_array{end};
-root = string(join(str_array(:,1:end-1),'/'));
-pat_path = append(pat_path,'/');
+root = string(join(str_array(:,1:end-1),filesep));
+pat_path = append(pat_path,filesep);
 
 if exist('lead','dir')==0
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/lead'));
@@ -101,7 +101,6 @@ end
 
 
 %% reconstructed lead parameters
-
 [heads,tails]=lead_parameters(pat_path,space,lead_orientation,hand,lead);
 
 
@@ -123,7 +122,6 @@ if strcmp(space,'native')
 
     disp('Conductivity map in native space computed.')
 end
-
 
 
 
@@ -233,9 +231,9 @@ for i = 1:length(hand)
 
 
     %% Optimization
-    cou = eye(19);
+    cou = eye(length(contact_names));
     [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
-        EFobj_constraint,EnormConstraint,relaxation);
+        EFobj_constraint,EnormConstraint,relaxation,cou);
 
 
     %% Compute VTA
@@ -262,7 +260,7 @@ for i = 1:length(hand)
 
     %write results to .txt
     mkdir([pat_path,'Suggestions'])
-    fid=fopen(append(pat_path,Suggestions,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(relaxation),'.txt'),'w');
+    fid=fopen(append(pat_path,'Suggestions',filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(relaxation),'.txt'),'w');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \n\n','%','%','%');
 
     a = cell(length(idx),6);
