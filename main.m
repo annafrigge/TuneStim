@@ -154,7 +154,6 @@ for i = 1:length(hand)
     end
 
     %% load cleaned volume electric data
-
     InitialSolution = load_comsol_solution(pat_path,hand{i},unit,lead,Nthreads);
     contact_names = fieldnames(InitialSolution);
 

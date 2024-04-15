@@ -44,7 +44,10 @@ coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'V_2A_3A'; 'V_2B_3B'; 'V_2C_3C';...
                  'Ring_R2'; 'Ring_R3';...
                  'C1X_C2A';'C1X_C2B';'C1X_C2C';...
-                 'C4X_C3A';'C4X_C3B';'C4X_C3C'];
+                 'C4X_C3A';'C4X_C3B';'C4X_C3C';...
+                 'C2A_C3B';'C2A_C3C';'C2B_C3A';...
+                 'C2B_C3C';'C2C_C3A';'C2C_C3B'];
+
 elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
     coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
@@ -285,6 +288,36 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead)
             model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel34');
             model.component('comp1').physics('ec').feature('ncd8').active(true);
             model.component('comp1').physics('ec').feature('ncd6').active(true);
+        case 26 % contact 2A and 3B
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel35');
+            model.component('comp1').physics('ec').feature('ncd2').active(true);
+            model.component('comp1').physics('ec').feature('ncd7').active(true);
+        case 27 % contact 2A and 3C
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel36');
+            model.component('comp1').physics('ec').feature('ncd2').active(true);
+            model.component('comp1').physics('ec').feature('ncd6').active(true);
+        case 28 % contact 2B and 3A
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel37');
+            model.component('comp1').physics('ec').feature('ncd4').active(true);
+            model.component('comp1').physics('ec').feature('ncd5').active(true);
+        case 29 % contact 2B and 3C
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel38');
+            model.component('comp1').physics('ec').feature('ncd4').active(true);
+            model.component('comp1').physics('ec').feature('ncd6').active(true);
+        case 30 % contact 2C and 3A
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel39');    
+            model.component('comp1').physics('ec').feature('ncd3').active(true);
+            model.component('comp1').physics('ec').feature('ncd5').active(true);
+        case 31 % contact 2C and 3B
+            model.param.set('I0', '-0.0005');
+            model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel40');
+            model.component('comp1').physics('ec').feature('ncd3').active(true);
+            model.component('comp1').physics('ec').feature('ncd7').active(true);
 
     end
     elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
