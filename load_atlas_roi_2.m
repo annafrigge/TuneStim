@@ -31,10 +31,16 @@ elseif strcmp(atlasset,'Essential Tremor Hypointensity (Neudorfer 2022)')
                    'Essential Tremor Hypointensity (Neudorfer 2022)/',hand,'/');
 
 elseif strcmp(atlasset,'DISTAL Minimal (Ewert 2017)')
-    path = append(apath,'atlases/',atlasset,'/',hand,'/');
+    path = append(apath,'atlases',filesep,atlasset,filesep,hand,filesep);
 
 elseif strcmp(atlasset,'DBS Tractography Atlas (Middlebrooks 2020)')
-    path = append(apath,'atlases/',atlasset,'/',hand,'/');
+    path = append(apath,'atlases',filesep,atlasset,filesep,hand,filesep);
+
+elseif strcmp(atlasset,'Human Dysfunctome Atlas (Hollunder 2024)')
+    disp('Humand Dysfunctome atlas is not yet supported in native space.')
+    path = append('C:\Users\annfr888\Documents\MATLAB\leaddbs31\',...
+          'templates\space\MNI152NLin2009bAsym\',...
+          'atlases',filesep,atlasset,filesep,hand,filesep);
   
 end
   

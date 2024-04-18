@@ -84,6 +84,8 @@ pat_path = append(pat_path,filesep);
 if exist('lead','dir')==0
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/lead'));
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/spm12'));
+    % add path to Human Dysfunctome atlas (Hollunder 2024)
+    addpath(genpath('C:\Users\annfr888\Documents\MATLAB\leaddbs31\templates\space\MNI152NLin2009bAsym\atlases\Human Dysfunctome Atlas (Hollunder 2024)'))
 end
 
 %try
