@@ -253,8 +253,8 @@ for i = 1:length(hand)
         computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
 
 
-    %% write array of recommendation
-    scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
+    %% write array of recommendations
+    %scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
     [desc_order,idx] = sort(pAct_target-pAct_constraint, 'descend');
     best_idx = idx(1);
 

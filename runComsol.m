@@ -47,7 +47,6 @@ coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'C4X_C3A';'C4X_C3B';'C4X_C3C';...
                  'C2A_C3B';'C2A_C3C';'C2B_C3A';...
                  'C2B_C3C';'C2C_C3A';'C2C_C3B'];
-
 elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
     coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
@@ -132,8 +131,8 @@ mphsave(model,name)
 
 
 tic
-
     parfor(i=1:length(coupl_combos),nProc)
+    %for i=1:length(coupl_combos)
         if nProc>1
             t=getCurrentTask();
             taskid = t.ID;

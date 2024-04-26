@@ -48,7 +48,7 @@ function [InitialSolution_clean] = load_comsol_solution(pat_path,hand,unit,lead,
     parfor(i=1:N,nThreads)
         filepath = append(path,'V_EF_cont_',contact_strings(i,:),'_',hand,'_',unit,'_gnd.csv');
         names{i} = sprintf(contact_strings(i,:));
-        values=readmatrix(filepath,'Delimiter',',','OutputType','double')
+        values = readmatrix(filepath,'Delimiter',',','OutputType','double')
         cleaned_values{i} =rmmissing(values);
     end
 
