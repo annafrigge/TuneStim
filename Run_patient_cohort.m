@@ -28,7 +28,7 @@ orientations = {[293,313],[249,288],[12,302],[25,153],[98,193],[52,345],...
 atlas = 'DISTAL Minimal (Ewert 2017)';
 target_names = {'STN_motor.nii.gz'};
 constraint_names = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
-optischeme = 'conservative';%'mincov';
+optischeme = 'mincov';%'conservative';%
 EThreshold = 200;
 relaxation = 10;
 Nthreads = 1;
@@ -38,7 +38,7 @@ rebuild = 0;
 
 
 %% Running optimization algorithm of choice for all patients
-for i=9:length(pat_names)
+for i=10:length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
     pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
     if strcmp(leads{1,i},'S:t Jude 1331')
@@ -51,7 +51,7 @@ for i=9:length(pat_names)
     end
     lead = leads{1,i};
     lead_orientation = orientations{1,i};
-    for rel = 1:9
+    for rel = 7:9
         relaxation = rel*10;
     main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,rebuild)  
     end
