@@ -13,7 +13,23 @@ lower_bound = 0;
 upper_bound = 10;
 
 
-if strcmp(optischeme,'conservative')
+if strcmp(optischeme,'Ruben')
+    % Relaxation adjusts E-field threshold for constraints
+    for m=1:length(alpha)
+        b = EFobj_constraint*(1+relaxation/100);
+        sort_EF_constraint = sort(EnormConstraint{m});
+        nindex = length(sort_EF_constraint);
+
+        A = sort_EF_constraint(nindex);
+
+        f = -sum(EnormTarget{m});
+
+        [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
+    end
+
+
+elseif strcmp(optischeme,'conservative')
+    % Relaxation percentage of points are allowed to exceed the threshold
     for m=1:length(alpha)
 
         b = EFobj_constraint;
@@ -22,7 +38,7 @@ if strcmp(optischeme,'conservative')
         n = length(sort_EF_constraint);
         pConstraint = 1-relaxation/100;
         nindex = floor(n*pConstraint);
-        A=sort_EF_constraint(nindex);
+        A = sort_EF_constraint(nindex);
 
         f = -sum(EnormTarget{m});
 

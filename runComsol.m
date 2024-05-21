@@ -126,7 +126,7 @@ mkdir(append(pat_path,'EFdistribution_',hand,'_1mA'));
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
 name = append(pat_path,'DBS_simulation.mph');
-mphsave(model,name)
+%mphsave(model,name)
 
 
 

@@ -43,12 +43,11 @@ function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,cons
 %  for each lead side defined in hand
 %
 % ToDo:
-% 1. Update GUI (name, Optimization options)
-% 2. Directly Efield norm at interpolated target/constraint points from
-%    COMSOL
-% 3. Include fiber activation?
-% 4.
-
+% 1. Directly Efield norm at interpolated target/constraint points from
+%    COMSOL ?
+% 2. Include fiber activation?
+% 3. Incorporate default values
+% 4. 
 
 
 tic
@@ -72,7 +71,7 @@ default_space = 'native';
 % define threshold and safetyMargin
 
 EFobj_target = EThreshold;      % threshold 200
-EFobj_constraint = 0.87*EThreshold;  % safety margin for constraint areas
+EFobj_constraint = 150; %0.5*EThreshold;  % safety margin for constraint areas
 
 
 %define patient directory and root directory
@@ -232,9 +231,12 @@ for i = 1:length(hand)
 
 
     %% Optimization
-    cou = eye(length(contact_names));
-    [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
-        EFobj_constraint,EnormConstraint,relaxation,cou);
+    % RELAXATION
+    for k = 1:length(relaxation)
+        rel = relaxation(k);
+        cou = eye(length(contact_names));
+        [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
+        EFobj_constraint,EnormConstraint,rel,cou);
 
 
     %% Compute VTA
@@ -242,29 +244,34 @@ for i = 1:length(hand)
     disp('Computing volume of tissue activated...')
 
     %compute target activation and spill
-    disp("computing target activation")
+    disp("Computing target activation")
     [pAct_target,pSpill_target,VTA] = ...
         computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,target_lst,EFobj_target,Nthreads);
 
 
     %compute constraint activation and spill
-    disp('computing constraint activation')
+    disp('Computing constraint activation')
     [pAct_constraint,pSpill_constraint,VTA] = ...
         computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
 
 
     %% write array of recommendations
-    %scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
-    [desc_order,idx] = sort(pAct_target-pAct_constraint, 'descend');
+    scoretype = 'score2';
+    if strcmp(scoretype, 'score1')
+        scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
+    elseif strcmp(scoretype, 'score2')
+        scores = (pAct_target-pAct_constraint)./alpha';
+    end
+    [desc_order,idx] = sort(scores, 'descend');
     best_idx = idx(1);
 
 
     %write results to .txt
     mkdir([pat_path,'Suggestions'])
-    fid=fopen(append(pat_path,'Suggestions',filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(relaxation),'.txt'),'w');
-    fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \n\n','%','%','%');
+    fid=fopen(append(pat_path,'Suggestions',filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w');
+    fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
-    a = cell(length(idx),6);
+    a = cell(length(idx),7);
     for j = 1:length(idx)
         in = idx(j);
         a{j,1} = erase(contact_names{in},'.csv');
@@ -273,8 +280,9 @@ for i = 1:length(hand)
         a{j,4} = num2str( round(pSpill_target(in)*100,2));
         a{j,5} = num2str( round(alpha(in),2) );
         a{j,6} = num2str( round(VTA(in),2) );
+        a{j,7} = num2str( round(scores(in),2));
 
-        fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6});
+        fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6},a{j,7});
     end
 
     fclose(fid);
@@ -320,6 +328,7 @@ for i = 1:length(hand)
         savefig(append(pat_path,hand{i},'_stimulation.fig'))
     else
         disp('Not plotting...')
+    end
     end
 end
 
