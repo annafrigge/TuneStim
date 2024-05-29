@@ -39,9 +39,9 @@ rebuild = 0;
 for i=1:length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
     pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
-    if strcmp(leads{1,i},'S:t Jude 1331')
-        continue
-    end
+    %if strcmp(leads{1,i},'Boston Scientific 2202')
+    %    continue
+    %end
     if strcmp(pat_names(i,:),'DBS_199')
         hand = {"dx"};
     else

@@ -49,7 +49,7 @@ function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,cons
 % 3. Incorporate default values
 % 4. 
 
-
+optimize = 1;
 tic
 settings;
 warning('off','MATLAB:dispatcher:nameConflict')
@@ -69,7 +69,6 @@ default_space = 'native';
 
 
 % define threshold and safetyMargin
-
 EFobj_target = EThreshold;      % threshold 200
 EFobj_constraint = 150; %0.5*EThreshold;  % safety margin for constraint areas
 
@@ -182,8 +181,10 @@ for i = 1:length(hand)
         disp('warning! Number of constraint points fewer than 100')
     end
 
+    disp(['Computing closes distance to target centroid for Patient ', pat_path(end-4:end-2), ' ', convertStringsToChars(hand{i})])
+    distance_contacts_to_target(Vol_target,head,tail)
 
-
+    if optimize == 1
     %% approximate target points E-field
     InitialSolution_cell = struct2cell(InitialSolution);
     solution_coords = InitialSolution.(contact_names{1})(:,1:3);
@@ -229,9 +230,8 @@ for i = 1:length(hand)
         end
     end
 
-
     %% Optimization
-    % RELAXATION
+    
     for k = 1:length(relaxation)
         rel = relaxation(k);
         cou = eye(length(contact_names));
@@ -240,7 +240,6 @@ for i = 1:length(hand)
 
 
     %% Compute VTA
-
     disp('Computing volume of tissue activated...')
 
     %compute target activation and spill
@@ -256,7 +255,7 @@ for i = 1:length(hand)
 
 
     %% write array of recommendations
-    scoretype = 'score2';
+    scoretype = 'score1';
     if strcmp(scoretype, 'score1')
         scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
     elseif strcmp(scoretype, 'score2')
@@ -329,9 +328,14 @@ for i = 1:length(hand)
     else
         disp('Not plotting...')
     end
+
+
+
+
+    end
     end
 end
-
+if optimize==1
 msg = best_option{:};
 
 
@@ -383,5 +387,5 @@ for i=1:length(contactnames)
     end
 end
 
-
+end
 end
