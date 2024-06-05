@@ -256,10 +256,15 @@ for i = 1:length(hand)
 
     %% write array of recommendations
     scoretype = 'score1';
+    wt= 2;
+    wc = 1;
+    ws = 1;
     if strcmp(scoretype, 'score1')
-        scores = pAct_target-pAct_constraint-pSpill_target; % scores need to be normalized for meaningful comparison across a dataset of patients?
+        scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
     elseif strcmp(scoretype, 'score2')
-        scores = (pAct_target-pAct_constraint)./alpha';
+        scores = (wt*pAct_target-wc*pAct_constraint)./alpha';
+    elseif (strcmp(scoretype,'score3'))
+        scores =(wt*pAct_target*100-wc*pAct_constraint*100)./alpha';
     end
     [desc_order,idx] = sort(scores, 'descend');
     best_idx = idx(1);
@@ -267,7 +272,9 @@ for i = 1:length(hand)
 
     %write results to .txt
     mkdir([pat_path,'Suggestions'])
-    fid=fopen(append(pat_path,'Suggestions',filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w');
+    mkdir([pat_path,'Suggestions',filesep,scoretype])
+    save(append(pat_path,'Suggestions',filesep,scoretype,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
+    fid=fopen(append(pat_path,'Suggestions',filesep,scoretype,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
     a = cell(length(idx),7);

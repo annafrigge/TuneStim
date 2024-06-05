@@ -12,8 +12,22 @@ options = optimoptions('linprog','Display','none');
 lower_bound = 0;
 upper_bound = 10;
 
-
 if strcmp(optischeme,'Ruben')
+    %% Assigning target values for STN_motor, STN_limbic and internal capsule
+    Enorm_obj_target = [target_coord; ones(length(target_coord),1)*EFobj_target];
+    Enorm_obj_constraint = [constraint_coord; ones(length(target_coord),1)*EFobj_target];
+
+    options = optimset('Display','off','LargeScale','off','MaxFunEvals',100,'PlotFcns',@optimplotfval);
+    alpha0 = 1; % initial scaling factor
+    
+    for m=1:length(alpha)
+    [alpha(m),J(m)]=fmincon(@(x)fcost_simple_v2_alpha(x,...
+                              EnormTarget,Enorm_obj_target,alpha(m,:)'),...
+                              alpha0,[],[],[],[],[],[],...
+                              @(x)stimConstraint(x,EnormConstraint,...
+                              Enorm_obj_constraint,alpha(m,:)'),options); 
+    end
+if strcmp(optischeme,'Ruben2')
     % Relaxation adjusts E-field threshold for constraints
     for m=1:length(alpha)
         b = EFobj_constraint*(1+relaxation/100);
