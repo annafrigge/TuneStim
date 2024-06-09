@@ -47,7 +47,7 @@ function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,cons
 %    COMSOL ?
 % 2. Include fiber activation?
 % 3. Incorporate default values
-% 4. 
+% 4. Optional optimization button
 
 optimize = 1;
 tic
@@ -157,7 +157,7 @@ for i = 1:length(hand)
     InitialSolution = load_comsol_solution(pat_path,hand{i},unit,lead,Nthreads);
     contact_names = fieldnames(InitialSolution);
 
-    %Get maximum coordinate point in ROI
+    % Get maximum coordinate point in ROI
     max_point = max(InitialSolution.(contact_names{1})(:,1:3));
     min_point = min(InitialSolution.(contact_names{1})(:,1:3));
 
@@ -167,7 +167,7 @@ for i = 1:length(hand)
 
     %% Remove points of target/constraint volumes that lie within the lead volume
     Vol_target = remove_lead_volume2( target,head,tail );
-    Vol_constraint = remove_lead_volume2( constraint,head,tail);
+    Vol_constraint = remove_lead_volume2(constraint,head,tail);
 
     try
         assert(length(Vol_target)>100)
@@ -258,7 +258,7 @@ for i = 1:length(hand)
     scoretype = 'score1';
     wt= 2;
     wc = 1;
-    ws = 1;
+    ws = 0.5;
     if strcmp(scoretype, 'score1')
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
     elseif strcmp(scoretype, 'score2')
@@ -273,7 +273,7 @@ for i = 1:length(hand)
     %write results to .txt
     mkdir([pat_path,'Suggestions'])
     mkdir([pat_path,'Suggestions',filesep,scoretype])
-    save(append(pat_path,'Suggestions',filesep,scoretype,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
+    %save(append(pat_path,'Suggestions',filesep,scoretype,filesep,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
     fid=fopen(append(pat_path,'Suggestions',filesep,scoretype,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
