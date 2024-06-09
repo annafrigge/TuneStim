@@ -101,7 +101,6 @@ model.result.export('tbl1').set('header', false);
 model.result.export('tbl1').label('Coupling Constants');
 
 
-% create export of electric field data
 model.result.export.create('data1', 'Data');
 model.result.export('data1').label('Volume data');
 model.result.export('data1').setIndex('expr', 'V', 0);
@@ -109,12 +108,27 @@ model.result.export('data1').setIndex('expr', 'ec.Ex', 1);
 model.result.export('data1').setIndex('expr', 'ec.Ey', 2);
 model.result.export('data1').setIndex('expr', 'ec.Ez', 3);
 model.result.export('data1').setIndex('expr', 'ec.normE', 4);
-model.result.export('data1').set('location', 'grid');
-model.result.export('data1').set('gridx3', 'range(-0.008+head_x,0.016/89,0.008+head_x)');
-model.result.export('data1').set('gridy3', 'range(-0.008+head_y,0.016/89,0.008+head_y)');
-model.result.export('data1').set('gridz3', 'range(-0.019+head_z,0.04/89,0.021+head_z)');
-model.result.export('data1').set('header', false);
 
+
+EfieldFrame = 'mesh'; % or 'grid'
+if strcmp(EfieldFrame,'grid')
+    disp('Exporting Efield at grid points...')
+    model.result.dataset('dset2').set('frametype', 'geometry');
+    model.result.export('data1').set('data', 'dset2');
+    % create export of electric field data
+    model.result.export('data1').set('location', 'grid');
+    model.result.export('data1').set('gridx3', 'range(-0.008+head_x,0.016/89,0.008+head_x)');
+    model.result.export('data1').set('gridy3', 'range(-0.008+head_y,0.016/89,0.008+head_y)');
+    model.result.export('data1').set('gridz3', 'range(-0.019+head_z,0.04/89,0.021+head_z)');
+
+elseif strcmp(EfieldFrame,'mesh')
+    disp('Exporting E-field at mesh nodes...')
+    model.result.dataset('dset2').set('frametype', 'mesh');
+    model.result.export('data1').set('data', 'dset2');
+    model.result.export('data1').set('resolution', 'finer');
+    model.result.export('data1').set('smooth', 'internal');
+end
+model.result.export('data1').set('header', false);
 model.sol('sol1').runAll;
 
 
@@ -145,7 +159,7 @@ tic
         end
        
         try 
-            EF_for_config(i,name,pat_path,hand,coupl_combos,lead)
+            EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
         catch ME
             disp(comsolPort)
             disp(ME)
@@ -156,7 +170,7 @@ out = model;
 disp('comsol done')
 end
 
-function EF_for_config(i,name,pat_path,hand,coupl_combos,lead)
+function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
     
     model = mphload(name);
     % deactivating current density on all contacts
@@ -396,12 +410,24 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead)
     model.component('comp1').probe('bnd8').genResult('none');
     model.sol('sol1').runAll;
 
+    if strcmp(EfieldFrame,'mesh')
+        dataV = mpheval(model,'V','selection','geom1_sel41'); % geom1_sel41 corresponds to inhomogeneous box
+        dataEx = mpheval(model,'ec.Ex','selection','geom1_sel41');
+        dataEy = mpheval(model,'ec.Ey','selection','geom1_sel41');
+        dataEz = mpheval(model,'ec.Ez','selection','geom1_sel41');
+        dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel41');
 
-    % export coupling constants
-    model.result.export('data1').set('filename', append(pat_path,...
-                                 'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos(i,:),'_', ...
-                                 hand,'_1mA_gnd.csv'));
-    model.result.export('data1').run;
+        data = [dataV.p',dataV.d1',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
+        writematrix(data,append(pat_path,...
+            'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos(i,:),'_', ...
+            hand,'_1mA_gnd.csv'),'Delimiter',',');
+    elseif strcmp(EfieldFrame,'grid')
+        % export coupling constants
+        model.result.export('data1').set('filename', append(pat_path,...
+            'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos(i,:),'_', ...
+            hand,'_1mA_gnd.csv'));
+        model.result.export('data1').run;
+    end
     disp(i)
 
 end

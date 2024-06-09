@@ -32,11 +32,11 @@ relaxation = 0:10:90;
 Nthreads = 1;
 space = 'MNI';
 plotoption = 0;
-rebuild = 0;
+rebuild = 1;
 
 
 %% Running optimization algorithm of choice for all patients
-for i=1:length(pat_names)
+for i=8:length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
     pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
     %if strcmp(leads{1,i},'Boston Scientific 2202')
@@ -46,6 +46,7 @@ for i=1:length(pat_names)
         hand = {"dx"};
     else
         hand = {"sin","dx"};
+        %hand = {"dx"};
     end
     lead = leads{1,i};
     lead_orientation = orientations{1,i};

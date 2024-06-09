@@ -27,7 +27,7 @@ if strcmp(optischeme,'Ruben')
                               @(x)stimConstraint(x,EnormConstraint,...
                               Enorm_obj_constraint,alpha(m,:)'),options); 
     end
-if strcmp(optischeme,'Ruben2')
+elseif strcmp(optischeme,'Ruben2')
     % Relaxation adjusts E-field threshold for constraints
     for m=1:length(alpha)
         b = EFobj_constraint*(1+relaxation/100);

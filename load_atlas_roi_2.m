@@ -3,8 +3,6 @@ function [target_roi,constraint_roi,target_lst,constraint_lst] = load_atlas_roi(
 % areas from .csv files.
 
 
-% - input parameter that decides, which atlas is used + native vs mni?
-
 if strcmp(hand,'dx')
     hand ='rh';
 elseif strcmp(hand,'sin')
