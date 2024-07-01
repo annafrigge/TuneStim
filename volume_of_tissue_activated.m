@@ -1,4 +1,4 @@
-function [p_act,p_spill,VTA] = volume_of_tissue_activated(EF,roi_lst,Rotation,head,leadvector,isolevel)
+function [pActRoi,pActSpill,VTA] = volume_of_tissue_activated(EF,roi_lst,Rotation,head,leadvector,isolevel)
 
 % Summary
 % --------
@@ -37,7 +37,7 @@ is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
 EF_activated = EF(is_activated,1:3);
 
 % if there are fewer than 6 activated points, consider tissue to be
-% completely unactivated
+% completely inactivated
 
 try
     [~,V_activated] = convhulln(EF_activated);
@@ -51,46 +51,66 @@ volActivatedMinusLead = volume_remove_lead(EF_activated,V_activated,Rotation,hea
 %% get activated points inside target
 
 %target volume
-Vol_total_target = 0;
-VolActivatedTarget = 0;
+Vol_total_roi = 0;
+VolActivatedRoi = 0;
+PointsTotalRoi = 0;
+PointsActRoi = 0;
+ActPointsInRoi = 0;
 
 for m=1:length(roi_lst)
-    Vpoints =roi_lst{m};
+    Vpoints = roi_lst{m};
     try
-        [~,Vol_target]=convhull(Vpoints(:,1:3));  
+        [~,Vol_roi] = convhull(Vpoints(:,1:3));  
     catch
-        Vol_target=0;
+        Vol_roi = 0;
     end
 
-    VolTargetMinusLead = volume_remove_lead(Vpoints,Vol_target,Rotation,head,leadvector);
-    
+    VolRoiMinusLead = volume_remove_lead(Vpoints,Vol_roi,Rotation,head,leadvector);
 
-    is_in_target=inhull(EF_activated,Vpoints(:,1:3));
-    A_in_target = EF_activated(is_in_target,:);
-    
 
+  
+    % test how many roi points lie in VTA
     try
-    [~,Vol_A_target]=convhull(A_in_target);
+        roi_in_VTA = inhull(Vpoints(:,1:3),EF_activated); 
     catch
-    Vol_A_target = 0;
+        roi_in_VTA = zeros(length(Vpoints),1);
     end
 
-   
-    volumeActivatedTargetMinusLead = volume_remove_lead(A_in_target,Vol_A_target,Rotation,head,leadvector);
-    
-        
-    VolActivatedTarget = VolActivatedTarget+volumeActivatedTargetMinusLead;
-    Vol_total_target = Vol_total_target + VolTargetMinusLead;
+    %A_in_roi = Vpoints(roi_in_VTA,:);
+    PointsActRoi = PointsActRoi + sum(roi_in_VTA);
+    PointsTotalRoi = PointsTotalRoi + length(Vpoints);
 
+
+
+    % test how many activated points lie in roi - rest is spill
+    is_in_roi = inhull(EF_activated,Vpoints(:,1:3)); 
+    A_in_roi = EF_activated(is_in_roi,:);
+
+    try
+        [~,Vol_A_target]=convhull(A_in_roi);
+    catch
+        Vol_A_target = 0;
+    end
+    volumeActivatedRoiMinusLead = volume_remove_lead(A_in_roi,Vol_A_target,Rotation,head,leadvector);
+    VolActivatedRoi = VolActivatedRoi+volumeActivatedRoiMinusLead;
+    Vol_total_roi = Vol_total_roi + VolRoiMinusLead;
+
+    ActPointsInRoi = ActPointsInRoi + sum(is_in_roi);
 
 end
 
 
 
 %% compute activation percentages
-%percentage of target activation
-p_act = ( VolActivatedTarget/Vol_total_target );
-p_spill = ( volActivatedMinusLead - VolActivatedTarget )/volActivatedMinusLead;
+%percentage of roi activation
+%p_act = ( VolActivatedRoi/Vol_total_roi );
+%p_spill = ( volActivatedMinusLead - VolActivatedRoi )/volActivatedMinusLead;
+pActRoi = sum(PointsActRoi)/PointsTotalRoi;
+%disp(append('Percentage of ROI activation: ', num2str(pActRoi*100)))
+
+pActSpill = (length(EF_activated)-ActPointsInRoi)/length(EF_activated);
+
+%disp(append('Spill percentage: ', num2str(pActSpill*100)))
 
 VTA = volActivatedMinusLead*10^9;
 end

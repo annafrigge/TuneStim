@@ -1,4 +1,4 @@
-function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,rebuild)
+function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,scoretype,rebuild)
 
 % main function that finds the optimal stimulation given the pre-processed
 % neuroimages in pat_path. The stimulation target and constraint are
@@ -43,11 +43,8 @@ function msg = main( pat_path,hand,lead,lead_orientation,atlas,target_names,cons
 %  for each lead side defined in hand
 %
 % ToDo:
-% 1. Directly Efield norm at interpolated target/constraint points from
-%    COMSOL ?
 % 2. Include fiber activation?
 % 3. Incorporate default values
-% 4. Optional optimization button
 
 optimize = 1;
 tic
@@ -77,7 +74,7 @@ EFobj_constraint = 150; %0.5*EThreshold;  % safety margin for constraint areas
 str_array= strsplit(pat_path,filesep);
 patient_name = str_array{end};
 root = string(join(str_array(:,1:end-1),filesep));
-pat_path = append(pat_path,filesep);
+%pat_path = append(pat_path,filesep);
 
 if exist('lead','dir')==0
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/lead'));
@@ -98,6 +95,10 @@ else
     Nthreads = 0;
 end
 
+%% Outout directories
+mkdir([pat_path,'Suggestions'])
+output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,scoretype];
+mkdir(output_path)
 
 
 %% reconstructed lead parameters
@@ -143,6 +144,10 @@ for i = 1:length(hand)
     tail = tails.(hand{i});
     orientation = lead_orientation(i);
 
+    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
+    fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
+    fclose(fid);
+
     %% build comsol model
     % simulate the electric field for unit stimulus in case that has
     % not been done previously or if the user requests a rebuild.
@@ -163,7 +168,8 @@ for i = 1:length(hand)
 
 
     %% load target and constraint and  consider only target points within max and min range
-    [target,constraint, target_lst,constraint_lst] = load_atlas_roi_2(hand{i},space,pat_path,atlas,target_names,constraint_names,max_point,min_point);
+    [target,constraint, target_lst,constraint_lst] = load_atlas_roi_2(hand{i},space,pat_path,atlas,target_names,constraint_names,max_point,min_point,head);
+
 
     %% Remove points of target/constraint volumes that lie within the lead volume
     Vol_target = remove_lead_volume2( target,head,tail );
@@ -181,7 +187,7 @@ for i = 1:length(hand)
         disp('warning! Number of constraint points fewer than 100')
     end
 
-    disp(['Computing closes distance to target centroid for Patient ', pat_path(end-4:end-2), ' ', convertStringsToChars(hand{i})])
+    disp(['Computing closes distance to target centroid for Patient ', pat_path(end-3:end-1), ' ', convertStringsToChars(hand{i})])
     distance_contacts_to_target(Vol_target,head,tail)
 
     if optimize == 1
@@ -215,7 +221,7 @@ for i = 1:length(hand)
     test_interpolation(EF_nearest,test_point,contact_names,method)
     clear test_point EF_nearest
 
-    %save constraint and target EF in cell array - one cell for each contact
+    % save constraint and target EF in cell array - one cell for each contact
     EnormConstraint = cell(length(contact_names),1);
     for k = 1:length(contact_names)
         for p = 1:length(Vol_constraint)
@@ -253,30 +259,30 @@ for i = 1:length(hand)
     [pAct_constraint,pSpill_constraint,VTA] = ...
         computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
 
+    % Compute Activation of target and constraints point-wise
+    
 
     %% write array of recommendations
-    scoretype = 'score1';
+    %scoretype = 'score1';
     wt= 2;
     wc = 1;
-    ws = 0.5;
+    ws = 1;
     if strcmp(scoretype, 'score1')
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
     elseif strcmp(scoretype, 'score2')
-        scores = (wt*pAct_target-wc*pAct_constraint)./alpha';
+        scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100;
     elseif (strcmp(scoretype,'score3'))
-        scores =(wt*pAct_target*100-wc*pAct_constraint*100)./alpha';
+        scores =(wt*pAct_target*100-wc*pAct_constraint*100);%./alpha';
     end
     [desc_order,idx] = sort(scores, 'descend');
     best_idx = idx(1);
 
 
     %write results to .txt
-    mkdir([pat_path,'Suggestions'])
-    mkdir([pat_path,'Suggestions',filesep,scoretype])
     %save(append(pat_path,'Suggestions',filesep,scoretype,filesep,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
-    fid=fopen(append(pat_path,'Suggestions',filesep,scoretype,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w');
+    fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'a');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
-
+    
     a = cell(length(idx),7);
     for j = 1:length(idx)
         in = idx(j);
@@ -292,6 +298,13 @@ for i = 1:length(hand)
     end
 
     fclose(fid);
+
+    %% Top suggestions for all relaxations
+    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'a');
+    fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
+    fclose(fid);
+
+
 
     % print out best option
     best_alpha = num2str( round(alpha(best_idx),2) );

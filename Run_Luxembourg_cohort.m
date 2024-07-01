@@ -28,9 +28,12 @@ relaxation = 0:10:90;
 Nthreads = 1;
 space = 'MNI';
 plotoption = 0;
-rebuild = 0;
+rebuild = 1;
+%hand = {"sin","dx"};
+hand = {"dx"};
 
 
+scoretype = 'score2';
 %% Running optimization algorithm of choice for all patients
 for i=1:1%length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
@@ -38,14 +41,9 @@ for i=1:1%length(pat_names)
     %if strcmp(leads{1,i},'Boston Scientific 2202')
     %    continue
     %end
-    if strcmp(pat_names(i,:),'DBS_199')
-        hand = {"dx"};
-    else
-        hand = {"sin","dx"};
-    end
     lead = leads{1,i};
     lead_orientation = orientations{1,i};
 
-    main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,rebuild)  
+    main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,scoretype,rebuild)  
 
 end

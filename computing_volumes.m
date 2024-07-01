@@ -18,7 +18,8 @@ pAct = zeros(length(alpha),1);
 pSpill = zeros(length(alpha),1);
 VTA = zeros(length(alpha),1);
 
-    parfor(m = 1:length(alpha),nThreads)
+    %parfor(m = 1:length(alpha),nThreads)
+    for m=1:length(alpha)
         EF = scaleEF(VEFStjude{m},alpha(m));
         [pAct(m),pSpill(m),VTA(m)] = volume_of_tissue_activated(EF,roi_lst,R,head,leadvector,EFisolevel);
        
