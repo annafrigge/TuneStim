@@ -23,9 +23,9 @@ leads = {'S:t Jude 1331','Boston Scientific 2202', 'S:t Jude 1331',...
          'Boston Scientific 2202','Boston Scientific 2202'};
 orientations = {[293,313],[94,288],[12,302],[25,153],[98,193],[52,345],...
                [32,116],[202,184],16.4,[308,38]};
-atlas = 'DISTAL Minimal (Ewert 2017)'; %'Human Dysfunctome Atlas (Hollunder 2024)';%'DBS Tractography Atlas (Middlebrooks 2020)';%
+atlas = 'DBS Tractography Atlas (Middlebrooks 2020)';%'DISTAL Minimal (Ewert 2017)'; %'Human Dysfunctome Atlas (Hollunder 2024)';%
 target_names = {'STN_motor_tract.mat'};%{'STN_motor.nii.gz'}; %{'Sweet_Streamline_PD.nii'};%
-constraint_names = {'STN_associative.nii.gz','STN_limbic.nii.gz'};%{'STN_associative_tract.mat','STN_limbic_tract.mat'};%
+constraint_names = {'STN_associative_tract.mat','STN_limbic_tract.mat'};%{'STN_associative.nii.gz','STN_limbic.nii.gz'};%
 optischeme = 'conservative';%'Ruben';% 'mincov';%
 EThreshold = 200;
 relaxation = 10:10:90;
@@ -37,7 +37,7 @@ scoretype = 'score2';
 
 
 %% Running optimization algorithm of choice for all patients
-for i=2:2%length(pat_names)
+for i=1:length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
     pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
     %if strcmp(leads{1,i},'Boston Scientific 2202')
@@ -47,7 +47,7 @@ for i=2:2%length(pat_names)
         hand = {"dx"};
     else
         hand = {"sin","dx"};
-        %hand = {"sin"};
+        %hand = {"dx"};
     end
     lead = leads{1,i};
     lead_orientation = orientations{1,i};

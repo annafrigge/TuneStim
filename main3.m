@@ -1,4 +1,4 @@
-function msg = main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,scoretype,rebuild)
+function msg = main3(cohortPath,patNames,leads,leadOrientations,atlas,target_names,constraint_names,optischeme,EThreshold,CThreshold,omega,Nthreads,space,plotoption,rebuild)
 
 % main function that finds the optimal stimulation given the pre-processed
 % neuroimages in pat_path. The stimulation target and constraint are
@@ -67,14 +67,25 @@ default_space = 'native';
 
 % define threshold and safetyMargin
 EFobj_target = EThreshold;      % threshold 200
-EFobj_constraint = 150; %0.5*EThreshold;  % safety margin for constraint areas
+EFobj_constraint = CThreshold; %0.5*EThreshold;  % safety margin for constraint areas
+omega = str2num(replace(omega,'-',' '));
+relaxation = 0:10:90;
+counter = 1;
+for pat=1:length(patNames)
+    disp(append('Patient ',patNames(pat,:),' loading ...'))
+    pat_path = char(append(cohortPath,filesep,patNames(pat,:),filesep));
+    %if strcmp(leads{1,i},'Boston Scientific 2202')
+    %    continue
+    %end
+    hand = {"sin","dx"};
+    lead = leads{pat,1};
+    lead_orientation = [leadOrientations{pat,1}, leadOrientations{pat,2}];
 
 
 %define patient directory and root directory
 str_array= strsplit(pat_path,filesep);
 patient_name = str_array{end};
 root = string(join(str_array(:,1:end-1),filesep));
-%pat_path = append(pat_path,filesep);
 
 if exist('lead','dir')==0
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/lead'));
@@ -96,8 +107,10 @@ else
 end
 
 %% Outout directories
+
 mkdir([pat_path,'Suggestions'])
-output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,scoretype];
+output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,'S-',num2str(omega(1)),'-',num2str(omega(2)),'-',num2str(omega(3))];
+
 mkdir(output_path)
 
 
@@ -140,9 +153,13 @@ end
 
 
 for i = 1:length(hand)
+    if isnan(lead_orientation(i))
+        continue
+    end
     head = heads.(hand{i});
     tail = tails.(hand{i});
     orientation = lead_orientation(i);
+
 
     fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
     fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
@@ -155,7 +172,7 @@ for i = 1:length(hand)
     FEM_sol_dir = append(pat_path,'EFdistribution_',hand{i},'_1mA');
 
     if ~exist(FEM_sol_dir,'dir') || rebuild == 1
-        runComsol(pat_path,hand{i},space,Nthreads,lead);
+        runComsolTerminal(pat_path,hand{i},space,Nthreads,lead);
     end
 
     %% load cleaned volume electric data
@@ -263,10 +280,10 @@ for i = 1:length(hand)
     
 
     %% write array of recommendations
-    %scoretype = 'score1';
-    wt= 2;
-    wc = 1;
-    ws = 1;
+    scoretype = 'score2';
+    wt= omega(1);
+    wc = omega(2);
+    ws = omega(3);
     if strcmp(scoretype, 'score1')
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
     elseif strcmp(scoretype, 'score2')
@@ -279,7 +296,6 @@ for i = 1:length(hand)
 
 
     %write results to .txt
-    %save(append(pat_path,'Suggestions',filesep,scoretype,filesep,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
     fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'a');
     fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
     
@@ -303,18 +319,22 @@ for i = 1:length(hand)
     fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'a');
     fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
     fclose(fid);
-
-
-
+    [bestScore, bestIdx] =  max(str2double({a{:,7}}));
+    if ~exist('bestSolution','var')    
+        bestSolution = a(bestIdx,:);
+    elseif bestScore > str2double(bestSolution{1,7})
+        bestSolution = a(bestIdx,:);
+    end
+    
     % print out best option
-    best_alpha = num2str( round(alpha(best_idx),2) );
-    best_target = num2str( round(pAct_target(best_idx)*100,2));
-    best_constraint = num2str( round(pAct_constraint(best_idx)*100,2));
-    best_spill = num2str( round(pSpill_target(best_idx)*100,2));
-    best_config = erase(contact_names{best_idx},'.csv');
-    best_VTA  = num2str( round(VTA(best_idx),2) );
-    best_option{i} = sprintf(' %s Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Alpha :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n',hand{i},best_config,'%',best_target,best_alpha,'%',best_spill,'%',best_constraint,best_VTA,char(179));
-
+    bestAlpha = bestSolution{5};%num2str( round(alpha(best_idx),2) );
+    bestTarget = bestSolution{2};%num2str( round(pAct_target(best_idx)*100,2));
+    bestConstraint = bestSolution{3};%num2str( round(pAct_constraint(best_idx)*100,2));
+    bestSpill = bestSolution{4};%num2str( round(pSpill_target(best_idx)*100,2));
+    bestConfig = bestSolution{1};%erase(contact_names{best_idx},'.csv');
+    bestVTA  = bestSolution{6};%num2str( round(VTA(best_idx),2) );
+    bestScore = bestSolution{7};
+    
     if plotoption
         disp('Plotting...')
         % visualisation
@@ -350,13 +370,13 @@ for i = 1:length(hand)
     end
 
 
-
-
     end
+    bestOption{counter} = sprintf(' Patient %s %s \n Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Amplitude :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n Score : %s \n',char(patNames(pat,:)),hand{i},bestConfig,'%',bestTarget,bestAlpha,'%',bestSpill,'%',bestConstraint,bestVTA,char(179),bestScore);
+    counter = counter +1;
     end
 end
 if optimize==1
-msg = best_option{:};
+msg = bestOption{:};
 
 
 gcp('nocreate');
@@ -379,7 +399,7 @@ end
 
 toc
 end
-
+end
 
 function plot_VTA(EFstruct,alpha,isolevel,best_idx,VTAfig)
 contactnames = fieldnames(EFstruct);

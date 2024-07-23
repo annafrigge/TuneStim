@@ -57,7 +57,7 @@ end
 if downsampling
     target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,3) > head(3)-15e-3 & target_lst{1,1}(:,3) < head(3)+15e-3, :);
     target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,2) > head(2)-15e-3 & target_lst{1,1}(:,2) < head(2)+15e-3, :);
-    target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,1) > head(1)-15e-3 & target_lst{1,1}(:,1) < head(2)+15e-3, :);
+    target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,1) > head(1)-15e-3 & target_lst{1,1}(:,1) < head(1)+15e-3, :);
     for j=1:length(constraint_lst)
     constraint_lst{j,1} = constraint_lst{1,1}(constraint_lst{1,1}(:,3) > head(3)-15e-3 & constraint_lst{1,1}(:,3) < head(3)+15e-3, :);
     constraint_lst{j,1} = constraint_lst{1,1}(constraint_lst{1,1}(:,2) > head(2)-15e-3 & constraint_lst{1,1}(:,3) < head(2)+15e-3, :);

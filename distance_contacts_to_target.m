@@ -19,12 +19,12 @@ lead_vector = (tail-head)/norm(tail-head);
 % coordinates. Due to nonlinear warp from native to MNI space, contact
 % positions in MNI space to not necessarily match
 mid_contact_coord = [head; head+1.5e-3*lead_vector; head+3e-3*lead_vector; head+4.5e-3*lead_vector;];
-scatter3(head(1),head(2),head(3),20,'filled','MarkerFaceColor','r')
-hold on
-scatter3(tail(1),tail(2),tail(3),20,'filled','MarkerFaceColor','b')
-hold on
-scatter3(mid_contact_coord(2:4,1),mid_contact_coord(2:4,2),mid_contact_coord(2:4,3),20,'filled','MarkerFaceColor','green')
-hold on
+% scatter3(head(1),head(2),head(3),20,'filled','MarkerFaceColor','r')
+% hold on
+% scatter3(tail(1),tail(2),tail(3),20,'filled','MarkerFaceColor','b')
+% hold on
+% scatter3(mid_contact_coord(2:4,1),mid_contact_coord(2:4,2),mid_contact_coord(2:4,3),20,'filled','MarkerFaceColor','green')
+% hold on
 
 dists = vecnorm(mid_contact_coord-centro,2,2);
 [min_dist, contact_row] = min(dists);
