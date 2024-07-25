@@ -183,123 +183,122 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
         model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
     switch i
         case 1 % contact 1
-            model.component('comp1').geom('geom1').feature('sel1').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
-
         case 2 % contact 2A
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 3 % contact 2B
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 4 % contact 2C
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 5 % contact 3A
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 6 % contact 3B
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 7 % contact 3C
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 8 % contact 4
-            model.component('comp1').geom('geom1').feature('sel8').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 9 % contact 2A and 2B
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 10 % contact 2B and 2C
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 11 % contact 2C and 2A
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 12 % contact 3A and 3B
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 13 % contact 3B and 3C
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');        
         case 14 % contact 3C and 3A
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 15 % contact 2A and 3A 
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 16 % contact 2B and 3B
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 17 % contact 2C and 3C
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 18 % contact 2A, 2B and 2C
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 19 % contact 3A, 3B and 3C
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 20 % contact 1 and 2A
-            model.component('comp1').geom('geom1').feature('sel1').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 21 % contact 1 and 2B
-            model.component('comp1').geom('geom1').feature('sel1').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 22 % contact 1 and 2C
-            model.component('comp1').geom('geom1').feature('sel1').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 23 % contact 4 and 3A
-            model.component('comp1').geom('geom1').feature('sel8').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 24 % contact 4 and 3B
-            model.component('comp1').geom('geom1').feature('sel8').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 25 % contact 4 and 3C
-            model.component('comp1').geom('geom1').feature('sel8').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 26 % contact 2A and 3B
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 27 % contact 2A and 3C
-            model.component('comp1').geom('geom1').feature('sel2').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2A').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 28 % contact 2B and 3A
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 29 % contact 2B and 3C
-            model.component('comp1').geom('geom1').feature('sel4').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel6').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2B').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3C').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 30 % contact 2C and 3A
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel5').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3A').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
         case 31 % contact 2C and 3B
-            model.component('comp1').geom('geom1').feature('sel3').set('contributeto', 'csel1');
-            model.component('comp1').geom('geom1').feature('sel7').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2C').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
     end
     elseif strcmp(lead,'Boston Scientific Vercise Cartesia')

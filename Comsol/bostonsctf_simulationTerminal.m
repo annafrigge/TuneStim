@@ -75,46 +75,57 @@ model.component('comp1').geom('geom1').feature('rot2').setIndex('pos', 'head_z',
 model.component('comp1').geom('geom1').feature('rot2').selection('input').set({'mov1'});
 model.component('comp1').geom('geom1').run('rot2');
 model.component('comp1').geom('geom1').run('fin');
-model.component('comp1').geom('geom1').create('sel1', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel1').label('Contact 1');
-model.component('comp1').geom('geom1').feature('sel1').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel1').selection('selection').set('fin', 12);
-model.component('comp1').geom('geom1').create('sel2', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel2').label('Contact 2A');
-model.component('comp1').geom('geom1').feature('sel2').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel2').selection('selection').set('fin', 23);
-model.component('comp1').geom('geom1').create('sel3', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel3').label('Contact 2C');
-model.component('comp1').geom('geom1').feature('sel3').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel3').selection('selection').set('fin', 15);
-model.component('comp1').geom('geom1').create('sel4', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel4').label('Contact 2B');
-model.component('comp1').geom('geom1').feature('sel4').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel4').selection('selection').set('fin', 55);
-model.component('comp1').geom('geom1').create('sel5', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel5').label('Contact 3A');
-model.component('comp1').geom('geom1').feature('sel5').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel5').selection('selection').set('fin', 38);
-model.component('comp1').geom('geom1').create('sel6', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel6').label('Contact 3C');
-model.component('comp1').geom('geom1').feature('sel6').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel6').selection('selection').set('fin', 26);
-model.component('comp1').geom('geom1').create('sel7', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel7').label('Contact 3B');
-model.component('comp1').geom('geom1').feature('sel7').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel7').selection('selection').set('fin', 64);
-model.component('comp1').geom('geom1').create('sel8', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel8').label('Contact 4');
-model.component('comp1').geom('geom1').feature('sel8').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel8').selection('selection').set('fin', 41);
+
+model.component('comp1').geom('geom1').create('sel_C1X', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C1X').label('Contact 1');
+model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').set('fin', 12);
+
+model.component('comp1').geom('geom1').create('sel_C2A', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C2A').label('Contact 2A');
+model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').set('fin', 23);
+
+model.component('comp1').geom('geom1').create('sel_C2C', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C2C').label('Contact 2C');
+model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').set('fin', 15);
+
+model.component('comp1').geom('geom1').create('sel_C2B', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C2B').label('Contact 2B');
+model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').set('fin', 55);
+
+model.component('comp1').geom('geom1').create('sel_C3A', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C3A').label('Contact 3A');
+model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').set('fin', 38);
+
+model.component('comp1').geom('geom1').create('sel_C3C', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C3C').label('Contact 3C');
+model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').set('fin', 26);
+
+model.component('comp1').geom('geom1').create('sel_C3B', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C3B').label('Contact 3B');
+model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').set('fin', 64);
+
+model.component('comp1').geom('geom1').create('sel_C4X', 'ExplicitSelection');
+model.component('comp1').geom('geom1').feature('sel_C4X').label('Contact 4');
+model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').init(2);
+model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').set('fin', 41);
+
 model.component('comp1').geom('geom1').create('sel9', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel9').selection('selection').init(2);
 model.component('comp1').geom('geom1').feature('sel9').label('All Contacts');
 model.component('comp1').geom('geom1').feature('sel9').selection('selection').set('fin', [12 15 23 26 38 41 55 64]);
+
 model.component('comp1').geom('geom1').create('sel10', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel10').selection('selection').init(2);
 model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('fin', [5 7 8 11 12 13 17 18 19 21]);
 model.component('comp1').geom('geom1').feature('sel10').label('LeadNoContacts');
+
 model.component('comp1').geom('geom1').create('sel11', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('fin', 2);
 model.component('comp1').geom('geom1').feature('sel11').label('InhomBox');
@@ -174,35 +185,35 @@ model.component('comp1').physics('ec').feature('gnd2').active(false);
 model.component('comp1').probe.create('bnd1', 'Boundary');
 model.component('comp1').probe('bnd1').set('intsurface', true);
 model.component('comp1').probe('bnd1').label('Contact 1 V');
-model.component('comp1').probe('bnd1').selection.named('geom1_sel1');
+model.component('comp1').probe('bnd1').selection.named('geom1_sel_C1X');
 model.component('comp1').probe.create('bnd2', 'Boundary');
 model.component('comp1').probe('bnd2').set('intsurface', true);
 model.component('comp1').probe('bnd2').label('Contact 2A V');
-model.component('comp1').probe('bnd2').selection.named('geom1_sel2');
+model.component('comp1').probe('bnd2').selection.named('geom1_sel_C2A');
 model.component('comp1').probe.create('bnd3', 'Boundary');
 model.component('comp1').probe('bnd3').set('intsurface', true);
 model.component('comp1').probe('bnd3').label('Contact 2C V');
-model.component('comp1').probe('bnd3').selection.named('geom1_sel3');
+model.component('comp1').probe('bnd3').selection.named('geom1_sel_C2C');
 model.component('comp1').probe.create('bnd4', 'Boundary');
 model.component('comp1').probe('bnd4').set('intsurface', true);
 model.component('comp1').probe('bnd4').label('Contact 2B V');
-model.component('comp1').probe('bnd4').selection.named('geom1_sel4');
+model.component('comp1').probe('bnd4').selection.named('geom1_sel_C2B');
 model.component('comp1').probe.create('bnd5', 'Boundary');
 model.component('comp1').probe('bnd5').set('intsurface', true);
 model.component('comp1').probe('bnd5').label('Contact 3A V');
-model.component('comp1').probe('bnd5').selection.named('geom1_sel5');
+model.component('comp1').probe('bnd5').selection.named('geom1_sel_C3A');
 model.component('comp1').probe.create('bnd6', 'Boundary');
 model.component('comp1').probe('bnd6').set('intsurface', true);
 model.component('comp1').probe('bnd6').label('Contact 3C V');
-model.component('comp1').probe('bnd6').selection.named('geom1_sel6');
+model.component('comp1').probe('bnd6').selection.named('geom1_sel_C3C');
 model.component('comp1').probe.create('bnd7', 'Boundary');
 model.component('comp1').probe('bnd7').set('intsurface', true);
 model.component('comp1').probe('bnd7').label('Contact 3B V');
-model.component('comp1').probe('bnd7').selection.named('geom1_sel7');
+model.component('comp1').probe('bnd7').selection.named('geom1_sel_C3B');
 model.component('comp1').probe.create('bnd8', 'Boundary');
 model.component('comp1').probe('bnd8').set('intsurface', true);
 model.component('comp1').probe('bnd8').label('Contact 4 V');
-model.component('comp1').probe('bnd8').selection.named('geom1_sel8');
+model.component('comp1').probe('bnd8').selection.named('geom1_sel_C4X');
 model.component('comp1').probe('bnd1').genResult('none');
 model.component('comp1').probe('bnd2').genResult('none');
 model.component('comp1').probe('bnd3').genResult('none');
@@ -265,7 +276,7 @@ model.component('comp1').physics('ec').create('term1', 'Terminal', 2);
 model.component('comp1').physics('ec').feature('fp1').active(true);
 
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
-model.component('comp1').physics('ec').feature('term1').selection.named('geom1_sel1');
+model.component('comp1').physics('ec').feature('term1').selection.named('geom1_sel_C1X');
 
 model.result.create('pg2', 'PlotGroup3D');
 model.result('pg2').set('edges', false);

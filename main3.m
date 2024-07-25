@@ -1,4 +1,8 @@
-function msg = main3(cohortPath,patNames,leads,leadOrientations,atlas,target_names,constraint_names,optischeme,EThreshold,CThreshold,omega,Nthreads,space,plotoption,rebuild)
+function msg = main3(cohortPath,patNames,leads,leadOrientations,atlas,...
+    target_names,constraint_names,optischeme,EThreshold,CThreshold,...
+    omega,Nthreads,space,optimize,plotoption,compareSettings,...
+    selectedPatient,clinicalSettings,computeDice,computeTargetCoverage,...
+    rebuild)
 
 % main function that finds the optimal stimulation given the pre-processed
 % neuroimages in pat_path. The stimulation target and constraint are
@@ -46,7 +50,6 @@ function msg = main3(cohortPath,patNames,leads,leadOrientations,atlas,target_nam
 % 2. Include fiber activation?
 % 3. Incorporate default values
 
-optimize = 1;
 tic
 settings;
 warning('off','MATLAB:dispatcher:nameConflict')
@@ -74,9 +77,7 @@ counter = 1;
 for pat=1:length(patNames)
     disp(append('Patient ',patNames(pat,:),' loading ...'))
     pat_path = char(append(cohortPath,filesep,patNames(pat,:),filesep));
-    %if strcmp(leads{1,i},'Boston Scientific 2202')
-    %    continue
-    %end
+
     hand = {"sin","dx"};
     lead = leads{pat,1};
     lead_orientation = [leadOrientations{pat,1}, leadOrientations{pat,2}];
@@ -161,9 +162,6 @@ for i = 1:length(hand)
     orientation = lead_orientation(i);
 
 
-    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
-    fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
-    fclose(fid);
 
     %% build comsol model
     % simulate the electric field for unit stimulus in case that has
@@ -208,10 +206,14 @@ for i = 1:length(hand)
     distance_contacts_to_target(Vol_target,head,tail)
 
     if optimize == 1
+
+    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
+    fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
+    fclose(fid);
+
     %% approximate target points E-field
     InitialSolution_cell = struct2cell(InitialSolution);
     solution_coords = InitialSolution.(contact_names{1})(:,1:3);
-
 
     fprintf('Interpolating comsol model E-field for %d points...',length(Vol_target)+length(Vol_constraint))
 
@@ -374,7 +376,15 @@ for i = 1:length(hand)
     bestOption{counter} = sprintf(' Patient %s %s \n Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Amplitude :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n Score : %s \n',char(patNames(pat,:)),hand{i},bestConfig,'%',bestTarget,bestAlpha,'%',bestSpill,'%',bestConstraint,bestVTA,char(179),bestScore);
     counter = counter +1;
     end
+
 end
+
+if compareSettings && strcmp(char(patNames(pat,:)),selectedPatient)
+    out = compareSuggested2Clinical(pat_path,space,hand,...
+        clinicalSettings,Vol_target,Vol_constraint,...
+        computeDice,computeTargetCoverage);
+end
+
 if optimize==1
 msg = bestOption{:};
 
