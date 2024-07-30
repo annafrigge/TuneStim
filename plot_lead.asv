@@ -1,32 +1,10 @@
-function plot_lead(pat_path,bestSolution)
+function plot_lead(pat_path)
 %plot_lead(head,tail,VTAfig,lead,orientation)
 %plot cylinder
-
     model = mphload(append(pat_path,'DBS_simulation.mph'));
-    alpha = bestSolution{5};
-    bestConfig = bestSolution{1};
-    model.param.set('I0', alpha*1e-3);   
-
-    % set active contacts
-    activeContacts = strsplit(clinicalSettings{1,h}{j},',')';
-    N1 = size(activeContacts,1);% # active negative contacts
-    model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
-
-    for i=1:N1
-        model.component('comp1').geom('geom1').feature(append('sel_',activeContacts(i,:))).set('contributeto', 'csel1');
-    end
-    model.component('comp1').geom('geom1').run('fin');
-
-    model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
-
-    model.sol('sol1').runAll;
-    %model.result('pg2').feature('iso1').active(false);
-    model.result('pg2').feature('surf1').feature('sel1').selection.named('geom1_sel9');
-    model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
+    model.result('pg2').feature('iso1').active(false);
     model.result('pg2').run;
-
-
-    mphplot(model,'pg2');
+    mphplot(model,'pg2')
 
     % leadvector=(tail-head)/norm(head-tail);
     % vlead0=[0,0,1];

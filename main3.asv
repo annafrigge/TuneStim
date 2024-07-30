@@ -352,7 +352,7 @@ for i = 1:length(hand)
         %plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
         %plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
         % plot_lead(head,tail,VTAfig,lead,orientation)
-        plot_lead(pat_path,bestSolution)
+        plot_lead(pat_path)
         VTAfig = gca;
         plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
         plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)

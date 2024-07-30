@@ -38,9 +38,10 @@ for i=1:length(hand)
         side_nr = 1;
     else
         side_nr = 2;
+
     end
     if isnan(lead_orientation(i))
-        continue
+         continue
     end
     [h,t] = get_lead_coordinates(pat_path,space,side_nr);
     disp('head-tail (dx, sin) distance is:')

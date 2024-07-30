@@ -7,7 +7,7 @@ leads = {'S:t Jude 1331','Boston Scientific 2202', 'S:t Jude 1331',...
          'S:t Jude 1331','Boston Scientific 2202','S:t Jude 1331'...
          'Boston Scientific 2202','S:t Jude 1331',...
          'Boston Scientific 2202','Boston Scientific 2202'};
-orientations = {[293,313],[249,288],[12,302],[25,153],[98,193],[52,345],...
+orientations = {[293,314],[249,288],[12,302],[25,153],[98,193],[52,345],...
                [32,116],[202,184],16.4,[308,38]};
 
 amplitudes = {[3,2.85],[4.6,1.5],[3.4,4.6],[2.6,2],[1.7,2.6],[3.2,1.5],[1.2,3],[4.4,3.3],[3.8,0],[1,2.4]};
@@ -19,6 +19,10 @@ space = 'MNI';
 EThreshold = 200;
 relaxation = 0:10:90;
 scoretype = 'score2';
+
+diceScoresInhom = {[NaN, 0.88], [NaN,0.78]};
+diceScoresTarget = {[NaN, 0.97], [NaN,0.89]};
+diceScoresConstraint = {[NaN, 0.74],[NaN,0.38};
 
 hands = {"dx","sin",};
 
