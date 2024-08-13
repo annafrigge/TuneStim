@@ -3,12 +3,10 @@ function plot_lead(pat_path,bestSolution)
 %plot cylinder
 
     model = mphload(append(pat_path,'DBS_simulation.mph'));
-    alpha = bestSolution{5};
-    bestConfig = bestSolution{1};
-    model.param.set('I0', alpha*1e-3);   
+    model.param.set('I0', str2double(bestSolution{5})*1e-3);   
 
     % set active contacts
-    activeContacts = strsplit(clinicalSettings{1,h}{j},',')';
+    activeContacts = strsplit(bestSolution{1},'_')';
     N1 = size(activeContacts,1);% # active negative contacts
     model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
 
@@ -24,10 +22,16 @@ function plot_lead(pat_path,bestSolution)
     model.result('pg2').feature('surf1').feature('sel1').selection.named('geom1_sel9');
     model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
     model.result('pg2').run;
-
+    
 
     mphplot(model,'pg2');
-
+    camlight("headlight")
+    % dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
+    % idx = dataEnorm.d1>=200;
+    % VTApoints= dataEnorm.p(:,idx)';
+    % [VTA,~] = convhull(VTApoints);
+    % hold on
+    % plot(VTApoints(k))
     % leadvector=(tail-head)/norm(head-tail);
     % vlead0=[0,0,1];
     % r = vrrotvec(vlead0,leadvector);

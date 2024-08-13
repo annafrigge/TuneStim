@@ -68,9 +68,35 @@ elseif strcmp(optischeme,'mincov')
         nindex = floor(n*pTarget);
         A = -sort_EF_target(nindex);
         f = sum(EnormConstraint{m}); % minimizing constraint coverage
+        try
+            [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
+        catch ME
+            %if(strcmp(ME.identifier,'MATLAB:matrix:singleSubscriptNumelMismatch'))
+            %    disp(append('Optimization not solvable for relaxations larger than ', num2str(relaxation)))
+            %end
+            alpha(m) = NaN;
+            J(m) = NaN;
+            continue
+        end
 
-        [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
     end
+elseif strcmp(optischeme,'simple')
+    %find optimal solution for each contact configuration
+
+    lower_bound = 0;
+    upper_bound = 1;
+    b = EFobj_constraint; 
+    sort_EF_constraint = sort(EnormConstraint{m});
+    n = length(sort_EF_constraint);
+    pConstraint = 1-relaxation/100;
+    nindex = floor(n*pConstraint);
+    %A = [sort_EF_constraint(nindex); %  
+
+    %f = -[
+    [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
+
+end
+
 end
 
 end

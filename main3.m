@@ -72,7 +72,11 @@ default_space = 'native';
 EFobj_target = EThreshold;      % threshold 200
 EFobj_constraint = CThreshold; %0.5*EThreshold;  % safety margin for constraint areas
 omega = str2num(replace(omega,'-',' '));
-relaxation = 0:10:90;
+if strcmp(optischeme,'conservative')
+    relaxation = 0:10:90;
+elseif strcmp(optischeme,'mincov')
+    relaxation = 10:10:90;
+end
 counter = 1;
 for pat=1:length(patNames)
     disp(append('Patient ',patNames{pat,:},' loading ...'))
@@ -174,6 +178,7 @@ for i = 1:length(hand)
         runComsolTerminal(pat_path,hand{i},space,Nthreads,lead);
     end
 
+    
     %% load cleaned volume electric data
     InitialSolution = load_comsol_solution(pat_path,hand{i},unit,lead,Nthreads);
     contact_names = fieldnames(InitialSolution);
@@ -202,11 +207,11 @@ for i = 1:length(hand)
     catch
         disp('warning! Number of constraint points fewer than 100')
     end
-
+    
+    if optimize == 1
     disp(['Computing closes distance to target centroid for Patient ', pat_path(end-3:end-1), ' ', convertStringsToChars(hand{i})])
     distance_contacts_to_target(Vol_target,head,tail)
 
-    if optimize == 1
 
     fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
     fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
@@ -354,8 +359,9 @@ for i = 1:length(hand)
         % plot_lead(head,tail,VTAfig,lead,orientation)
         plot_lead(pat_path,bestSolution)
         VTAfig = gca;
+        hold on
         plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
-        plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
+        %plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
         %adjust figure properties
         fac=1;
         ax=VTAfig;
@@ -378,19 +384,20 @@ for i = 1:length(hand)
         set(gcf, 'color',[0.1 0.1 0.1])
         copyobj([VTAfig,VTAfig.Legend],fig1);
         savefig(append(pat_path,hand{i},'_stimulation.fig'))
-    else
-        disp('Not plotting...')
-    end
+     else
+         disp('Not plotting...')
+     end
+     if compareSettings %&& strcmp(char(patNames(pat,:)),selectedPatient)
+         out = compareSuggested2Clinical(pat_path,space,hand{i},head,tail,...
+             clinicalSettings{1,i}.(patNames{pat,:}),target_names,Vol_target,Vol_constraint,...
+             computeDice,computeTargetCoverage);
+     end
+     msg = 'Done comparing settings.';
 end
 if optimize==1
 msg = bestOption{:};
 end
-if compareSettings && strcmp(char(patNames(pat,:)),selectedPatient)
-    out = compareSuggested2Clinical(pat_path,space,hand,...
-        clinicalSettings,Vol_target,Vol_constraint,...
-        computeDice,computeTargetCoverage);
-    msg = 1;
-end
+
 
 
 

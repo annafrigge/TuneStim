@@ -33,8 +33,15 @@ function [pActRoi,pActSpill,VTA] = volume_of_tissue_activated(EF,roi_lst,Rotatio
 % EF_activated contains all point with E-field larger than activation 
 % threshold * safetyMargin
 
-is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
-EF_activated = EF(is_activated,1:3);
+
+
+if isstruct(EF)
+    is_activated = (EF.d4'>isolevel & ~isnan(EF.d4'));
+    EF_activated = [EF.d1(is_activated)',EF.d2(is_activated)',EF.d3(is_activated)'];
+else
+    is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
+    EF_activated = EF(is_activated,1:3);
+end
 
 % if there are fewer than 6 activated points, consider tissue to be
 % completely inactivated
@@ -57,8 +64,19 @@ PointsTotalRoi = 0;
 PointsActRoi = 0;
 ActPointsInRoi = 0;
 
-for m=1:length(roi_lst)
-    Vpoints = roi_lst{m};
+if iscell(roi_lst)
+    Nm = length(roi_lst);
+else
+    Nm = 1;
+end
+
+for m=1:Nm
+    if iscell(roi_lst)
+        Vpoints = roi_lst{m};
+    else
+        Vpoints = roi_lst;
+    end
+    
     try
         [~,Vol_roi] = convhull(Vpoints(:,1:3));  
     catch
@@ -67,8 +85,6 @@ for m=1:length(roi_lst)
 
     VolRoiMinusLead = volume_remove_lead(Vpoints,Vol_roi,Rotation,head,leadvector);
 
-
-  
     % test how many roi points lie in VTA
     try
         roi_in_VTA = inhull(Vpoints(:,1:3),EF_activated); 

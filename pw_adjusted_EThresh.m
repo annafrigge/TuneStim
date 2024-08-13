@@ -22,6 +22,6 @@ params_fit = lsqcurvefit(model, initialGuess, x, y);
 y_estimate = model(params_fit, x_estimate);
 
 % Display the estimated value at x = 30
-fprintf('Estimated y at x = 30: %.2f\n', y_estimate);
+%fprintf('Estimated y at x = %.1f us: %.2f\n', x_estimate,y_estimate);
 
 end

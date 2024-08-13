@@ -20,12 +20,114 @@ EThreshold = 200;
 relaxation = 0:10:90;
 scoretype = 'score2';
 
-diceScoresInhom = {[NaN, 0.88], [NaN,0.78]};
-diceScoresTarget = {[NaN, 0.97], [NaN,0.89]};
-diceScoresConstraint = {[NaN, 0.74],[NaN,0.38};
 
+% Dice scores for STN tracts
+diceScoresInhomTracts = [0.97 0.88; 0.80,0.80; 0.78,0.70;0.91,0.74;...
+                    0.83,0.67;0.83,0.84;0.53,0.57;0.80,0.77;...
+                    NaN,0.74;0.66,0.52];
+bar(diceScoresInhomTracts)
+colororder("earth")
+legend('Sin','Dx')
+ylabel('DSC')
+xlabel('Patient ID')
+title('Inhomogeneous Tissue')
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresInhomSTNTracts.png','Resolution',300)
+% Check if scores stem from normal distribution:
+% kstest([leftScores;rightScores]) --> rejected i.e. not normally
+% distributed
+
+% All leads median score: 0.78, iqr 0.1525 ( The range between the first
+% quartile (25th percentile) and the third quartile (75th percentile).)
+
+diceScoresTargetTracts = [0.96, 0.97; 0.55,0.98;0.89,0.87;0.88,0.41;...
+                    0.95,0.75;0.74,0.84;0.65,0.16;0.82,0.84;...
+                    NaN,0.97;0.01,0.28];
+figure()
+bar(diceScoresTargetTracts)
+colororder("earth")
+legend('Sin','Dx')
+ylabel('DSC')
+xlabel('Patient ID')
+title('Target')
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresTargetsSTNTracts.png','Resolution',300)
+
+
+diceScoresConstraintTracts = [0.77, 0.74;0.53,0.52;0.54,0.46;0.60,0.24;...
+                        0.76,0.51;0.46,0.57;0.41,0.01;0.46,0.75;...
+                        NaN,0.40;0.10,0.36];
+figure()
+bar(diceScoresConstraintTracts)
+colororder("earth")
+legend('Sin','Dx')
+xlabel('Patient ID')
+ylabel('DSC')
+title('Constraint')
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresConstraintsSTNTracts.png','Resolution',300)
+
+
+% Dice scores for targeting STN motor, limbic and associative as
+% constraints
+diceScoresInhomSTN = [0.97,0.88; 0.59,0.79; 0.78,0.69; 0.91, 0.73;...
+                      0.82,0.67; NaN,NaN; 0.52,0.67; 0.83,0.77;...
+                      NaN,0.73; 0.49,0.85];
+figure()
+bar(diceScoresInhomSTN)
+colororder("earth")
+legend('Sin','Dx')
+ylabel('DSC')
+xlabel('Patient ID')
+title('Inhomogeneous Tissue')
+diceScoresTargetSTN = [0.96,0.97; 0.34,0.96; 0.88,0.85; 0.88,0.40; ...
+                       0.94,0.73; NaN,NaN; 0.63,0.27; 0.80,0.83; ...
+                       NaN,0.97; 0,0.78];
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresInhomSTNSubs.png','Resolution',300)
+
+figure()
+bar(diceScoresTargetSTN)
+colororder("earth")
+legend('Sin','Dx')
+ylabel('DSC')
+xlabel('Patient ID')
+title('Target')
+
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresTargetSTNSubs.png','Resolution',300)
+
+diceScoresConstraintSTN = [0.75,0.73; 0.39,0.64; 0.52,0.45; 0.59, 0.24;...
+                           0.78,0.49; NaN,NaN; 0.39, 0.07; 0.63,0.74;...
+                           NaN, 0.39; 0,0.62];
+figure()
+bar(diceScoresConstraintSTN)
+colororder("earth")
+legend('Sin','Dx')
+ylabel('DSC')
+xlabel('Patient ID')
+title('Constraint')
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\DiceScoresConstraintSTNSubs.png','Resolution',300)
+
+
+
+
+
+%covTarget = {[66.76]}     % in [%]
+%covConstraint = {[                      ]}
 hands = {"dx","sin",};
-
+leftScores = zeros(length(diceScoresInhom),1);
+rightScores = zeros(length(diceScoresInhom),1);
+for i =1:length(diceScoresInhom)
+    leftScores(i) = diceScoresInhom{1,i}(1);
+    rightScores(i) = diceScoresInhom{1,i}(2);
+    plot(i,diceScoresInhom{1,i}(1),'Marker','*','LineStyle','none','Color','blue')
+    hold on
+    plot(i,diceScoresInhom{1,i}(2),'Marker','*','LineStyle','none','Color','red')
+end
+ylim([0,1])
+legend('Left','Right')
 
 %% Plotting
 cm = parula(10);

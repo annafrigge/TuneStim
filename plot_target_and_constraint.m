@@ -38,7 +38,7 @@ function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
    
     n = length(region.name);
   
-    CM = hsv(n); 
+    CM = lines(n);%hsv(n); 
  
 
     for i=1:n
