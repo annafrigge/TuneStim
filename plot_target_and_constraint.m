@@ -20,13 +20,11 @@ function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
     
   
 
-    if strcmp(hand,'dx')
+    if strcmp(hand,'sin')
         side = 1;
-    elseif strcmp(hand,'sin')
+    elseif strcmp(hand,'dx')
         side = 2;
     end
-
-
     
     load(append(pat_path,'atlases/',atlas,'/neurostructures.mat'),'region')
     
@@ -47,8 +45,8 @@ function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
                 
                 
                 coords = region.coords{i,side};
+                %% Add option for fiber tracts!
                 C = convhull(coords(:,1),coords(:,2),coords(:,3));
-                
                 
                 shp = alphaShape(coords(:,1),coords(:,2),coords(:,3));
                 name = erase(region.name{i,side},'.nii.gz');

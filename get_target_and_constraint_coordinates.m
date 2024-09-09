@@ -1,8 +1,8 @@
 function [target,constraint,atlas_struct] = get_target_and_constraint_coordinates(path,target_name,constraint_name,hand,max,min)
 
-if strcmp(hand,'rh')
+if strcmp(hand,'lh')
     side = 1;
-elseif strcmp(hand,'lh')
+elseif strcmp(hand,'rh')
     side = 2;
 end
 
@@ -44,9 +44,8 @@ for k = 1:numel(S)
 
             % change units from mm to m
             xyzCoordinates = double(fibers(:,1:3)*1e-3);
-
             %set intensityvalue to 1 for every fibre point
-            intensityValues = ones(size(fibers,1),1);
+            intensityValues = double(fibers(:,4));%ones(size(fibers,1),1);
             Npoints = length(xyzCoordinates);
             region = [xyzCoordinates reshape(intensityValues,Npoints,1)];
         end

@@ -267,90 +267,83 @@ for i = 1:length(hand)
         rel = relaxation(k);
         cou = eye(length(contact_names));
         [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
-        EFobj_constraint,EnormConstraint,rel,cou);
+            EFobj_constraint,EnormConstraint,rel,cou);
+
+        %% Compute VTA
+        disp('Computing volume of tissue activated...')
+
+        %compute target activation and spill
+        disp("Computing target activation")
+        [pAct_target,pSpill_target,VTA] = ...
+            computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,target_lst,EFobj_target,Nthreads);
 
 
-    %% Compute VTA
-    disp('Computing volume of tissue activated...')
+        %compute constraint activation and spill
+        disp('Computing constraint activation')
+        [pAct_constraint,pSpill_constraint,VTA] = ...
+            computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
 
-    %compute target activation and spill
-    disp("Computing target activation")
-    [pAct_target,pSpill_target,VTA] = ...
-        computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,target_lst,EFobj_target,Nthreads);
+     
 
 
-    %compute constraint activation and spill
-    disp('Computing constraint activation')
-    [pAct_constraint,pSpill_constraint,VTA] = ...
-        computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
-
-    % Compute Activation of target and constraints point-wise
-    
-
-    %% write array of recommendations
-    scoretype = 'score2';
-    wt= omega(1);
-    wc = omega(2);
-    ws = omega(3);
-    if strcmp(scoretype, 'score1')
-        scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
-    elseif strcmp(scoretype, 'score2')
+        %% write array of recommendations
+        wt= omega(1);% scores need to be normalized for meaningful comparison across a dataset of patients?
+        wc = omega(2);
+        ws = omega(3);
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100;
-    elseif (strcmp(scoretype,'score3'))
-        scores =(wt*pAct_target*100-wc*pAct_constraint*100);%./alpha';
-    end
-    [desc_order,idx] = sort(scores, 'descend');
-    best_idx = idx(1);
+
+        [desc_order,idx] = sort(scores, 'descend');
+        best_idx = idx(1);
 
 
-    %write results to .txt
-    fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'a');
-    fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
-    
-    a = cell(length(idx),7);
-    for j = 1:length(idx)
-        in = idx(j);
-        a{j,1} = erase(contact_names{in},'.csv');
-        a{j,2} = [9 num2str( round(pAct_target(in)*100,2))];
-        a{j,3} = num2str( round(pAct_constraint(in)*100,2));
-        a{j,4} = num2str( round(pSpill_target(in)*100,2));
-        a{j,5} = num2str( round(alpha(in),2) );
-        a{j,6} = num2str( round(VTA(in),2) );
-        a{j,7} = num2str( round(scores(in),2));
+        %write results to .txt
+        fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w+');
+        fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
-        fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6},a{j,7});
-    end
+        a = cell(length(idx),7);
+        for j = 1:length(idx)
+            in = idx(j);
+            a{j,1} = erase(contact_names{in},'.csv');
+            a{j,2} = [9 num2str( round(pAct_target(in)*100,2))];
+            a{j,3} = num2str( round(pAct_constraint(in)*100,2));
+            a{j,4} = num2str( round(pSpill_target(in)*100,2));
+            a{j,5} = num2str( round(alpha(in),2) );
+            a{j,6} = num2str( round(VTA(in),2) );
+            a{j,7} = num2str( round(scores(in),2));
 
-    fclose(fid);
+            fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6},a{j,7});
+        end
 
-    %% Top suggestions for all relaxations
-    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'a');
-    fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
-    fclose(fid);
-    [bestScore, bestIdx] =  max(str2double({a{:,7}}));
-    if ~exist('bestSolution','var')    
-        bestSolution = a(bestIdx,:);
-    elseif bestScore > str2double(bestSolution{1,7})
-        bestSolution = a(bestIdx,:);
-    end
-    
-    % print out best option
-    bestAlpha = bestSolution{5};%num2str( round(alpha(best_idx),2) );
-    bestTarget = bestSolution{2};%num2str( round(pAct_target(best_idx)*100,2));
-    bestConstraint = bestSolution{3};%num2str( round(pAct_constraint(best_idx)*100,2));
-    bestSpill = bestSolution{4};%num2str( round(pSpill_target(best_idx)*100,2));
-    bestConfig = bestSolution{1};%erase(contact_names{best_idx},'.csv');
-    bestVTA  = bestSolution{6};%num2str( round(VTA(best_idx),2) );
-    bestScore = bestSolution{7};
-    
-   
+        fclose(fid);
+
+        %% Top suggestions for all relaxations
+        fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'a');
+        fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
+        fclose(fid);
+        [bestScore, bestIdx] =  max(str2double({a{:,7}}));
+        if ~exist('bestSolution','var')
+            bestSolution = a(bestIdx,:);
+        elseif bestScore > str2double(bestSolution{1,7})
+            bestSolution = a(bestIdx,:);
+        end
+
+        % print out best option
+        bestAlpha = bestSolution{5};%num2str( round(alpha(best_idx),2) );
+        bestTarget = bestSolution{2};%num2str( round(pAct_target(best_idx)*100,2));
+        bestConstraint = bestSolution{3};%num2str( round(pAct_constraint(best_idx)*100,2));
+        bestSpill = bestSolution{4};%num2str( round(pSpill_target(best_idx)*100,2));
+        bestConfig = bestSolution{1};%erase(contact_names{best_idx},'.csv');
+        bestVTA  = bestSolution{6};%num2str( round(VTA(best_idx),2) );
+        bestScore = bestSolution{7};
+
+
 
 
     end
     bestOption{counter} = sprintf(' Patient %s %s \n Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Amplitude :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n Score : %s \n',char(patNames(pat,:)),hand{i},bestConfig,'%',bestTarget,bestAlpha,'%',bestSpill,'%',bestConstraint,bestVTA,char(179),bestScore);
     counter = counter +1;
     end
-     if plotoption
+    if plotoption
         disp('Plotting...')
         % visualisation
         %[fig,VTAfig,lgd] = visualize();
@@ -384,12 +377,12 @@ for i = 1:length(hand)
         set(gcf, 'color',[0.1 0.1 0.1])
         copyobj([VTAfig,VTAfig.Legend],fig1);
         savefig(append(pat_path,hand{i},'_stimulation.fig'))
-     else
+    else
          disp('Not plotting...')
      end
      if compareSettings %&& strcmp(char(patNames(pat,:)),selectedPatient)
          out = compareSuggested2Clinical(pat_path,space,hand{i},head,tail,...
-             clinicalSettings{1,i}.(patNames{pat,:}),target_names,Vol_target,Vol_constraint,...
+             clinicalSettings{1,i}.(patNames{pat,:}),atlas,target_names,constraint_names,Vol_target,Vol_constraint,...
              computeDice,computeTargetCoverage);
      end
      msg = 'Done comparing settings.';
@@ -397,8 +390,6 @@ end
 if optimize==1
 msg = bestOption{:};
 end
-
-
 
 
 gcp('nocreate');

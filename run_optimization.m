@@ -98,5 +98,3 @@ elseif strcmp(optischeme,'simple')
 end
 
 end
-
-end
