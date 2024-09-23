@@ -343,14 +343,25 @@ for i = 1:length(hand)
     bestOption{counter} = sprintf(' Patient %s %s \n Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Amplitude :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n Score : %s \n',char(patNames(pat,:)),hand{i},bestConfig,'%',bestTarget,bestAlpha,'%',bestSpill,'%',bestConstraint,bestVTA,char(179),bestScore);
     counter = counter +1;
     end
-    if plotoption
+    
+     
+     if plotoption
         disp('Plotting...')
         % visualisation
         %[fig,VTAfig,lgd] = visualize();
         %plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
         %plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
         % plot_lead(head,tail,VTAfig,lead,orientation)
-        plot_lead(pat_path,bestSolution)
+        if exist("bestSolution")
+            plot_lead(pat_path,bestSolution,hand{i},space)
+        elseif compareSettings
+            I0 = clinicalSettings{1,i}.(patNames{pat,:}){1,2};
+            Contacts = strrep(clinicalSettings{1,i}.(patNames{pat,:}){1,1},',','_');
+            pw = clinicalSettings{1,i}.(patNames{pat,:}){1,3};
+            bestSolution = {Contacts,'','','',I0};
+            plot_lead(pat_path,bestSolution,hand{i},space)
+            clear I0 Contacts pw
+        end
         VTAfig = gca;
         hold on
         plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
@@ -364,11 +375,10 @@ for i = 1:length(hand)
 
         ax.YLim(1)=ax.YLim(1)-fac*norm(ax.YLim(1)-ax.YLim(2));
         ax.YLim(2)=ax.YLim(2)+fac*norm(ax.YLim(1)-ax.YLim(2));
-        lgt=light(ax);
-        lgt.Position=[-50,-50,50];
+        %camlight("headlight")
         axis(ax,'equal')
+        light("Position",[-1 0 0],"Style","infinite")
         %try closing and opening suggestion file
-
         %system(['killall TextEdit ']);
         %system(['open -a TextEdit ' fullfile( pat_path,append(hand{i},'_suggestion.txt') ) ]);
 
@@ -377,7 +387,7 @@ for i = 1:length(hand)
         set(gcf, 'color',[0.1 0.1 0.1])
         copyobj([VTAfig,VTAfig.Legend],fig1);
         savefig(append(pat_path,hand{i},'_stimulation.fig'))
-    else
+     else
          disp('Not plotting...')
      end
      if compareSettings %&& strcmp(char(patNames(pat,:)),selectedPatient)

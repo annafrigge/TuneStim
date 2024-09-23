@@ -12,7 +12,12 @@ end
 if strcmp(space,'native')
     apath=pat_path;
 else
-    spacename='MNI_ICBM_2009b_NLIN_ASYM';
+    lpath = ea_getearoot;
+    if contains(lpath,'leaddbs')
+        spacename= 'MNI152NLin2009bAsym';
+    else
+        spacename='MNI_ICBM_2009b_NLIN_ASYM';
+    end
     apath=[ea_getearoot,'templates',filesep,'space',filesep,spacename,filesep];
 end
 

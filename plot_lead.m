@@ -1,10 +1,15 @@
-function plot_lead(pat_path,bestSolution)
+function plot_lead(pat_path,bestSolution,hand,space)
 %plot_lead(head,tail,VTAfig,lead,orientation)
 %plot cylinder
 
     model = mphload(append(pat_path,'DBS_simulation.mph'));
-    model.param.set('I0', str2double(bestSolution{5})*1e-3);   
-
+    model.param.loadFile(append(pat_path,'lead_parameters_',...
+        space,'_',hand,'.txt'));
+    if isstring(bestSolution{5})
+        model.param.set('I0', str2double(bestSolution{5})*1e-3); 
+    else
+        model.param.set('I0', bestSolution{5}*1e-3); 
+    end
     % set active contacts
     activeContacts = strsplit(bestSolution{1},'_')';
     N1 = size(activeContacts,1);% # active negative contacts
@@ -20,12 +25,12 @@ function plot_lead(pat_path,bestSolution)
     model.sol('sol1').runAll;
     %model.result('pg2').feature('iso1').active(false);
     model.result('pg2').feature('surf1').feature('sel1').selection.named('geom1_sel9');
-    model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
     model.result('pg2').run;
-    
-
+    model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
+ 
+    model.result('pg2').run;
     mphplot(model,'pg2');
-    camlight("headlight")
+    %camlight
     % dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
     % idx = dataEnorm.d1>=200;
     % VTApoints= dataEnorm.p(:,idx)';

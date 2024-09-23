@@ -54,7 +54,7 @@ function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
                 
                 %trisurf(C,coords(:,1),coords(:,2),coords(:,3),'FaceColor',CM(i,:),'EdgeColor','none','FaceAlpha',0.6,'DisplayName',name,'Parent',VTAfig);
                
-                plot(shp,'FaceColor',CM(i,:),'EdgeColor','none','FaceAlpha',0.4,'DisplayName',name,'Parent',VTAfig)
+                plot(shp,'FaceColor',CM(i,:),'EdgeColor','none','FaceAlpha',0.6,'DisplayName',name,'Parent',VTAfig)
               
                 hold(VTAfig,'on')
                 
