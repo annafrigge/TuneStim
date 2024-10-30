@@ -6,7 +6,7 @@ function distance_contacts_to_target(Vol_target,head,tail)
 % directed
 
 %% Step 0: Compute centroid of target
-centro = polygonCentroid3d(Vol_target);
+centro = polygonCentroid3d(Vol_target(:,1:3));
 %scatter3(centro(1),centro(2),centro(3),20,'filled','MarkerFaceColor','red')
 %hold on 
 %scatter3(Vol_target(:,1),Vol_target(:,2),Vol_target(:,3),5,'filled')

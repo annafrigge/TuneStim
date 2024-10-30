@@ -72,7 +72,7 @@ default_space = 'native';
 EFobj_target = EThreshold;      % threshold 200
 EFobj_constraint = CThreshold; %0.5*EThreshold;  % safety margin for constraint areas
 omega = str2num(replace(omega,'-',' '));
-if strcmp(optischeme,'conservative')
+if strcmp(optischeme,'conservative')| strcmp(optischeme,'Ruben')
     relaxation = 0:10:90;
 elseif strcmp(optischeme,'mincov')
     relaxation = 10:10:90;
@@ -115,7 +115,7 @@ end
 %% Outout directories
 
 mkdir([pat_path,'Suggestions'])
-output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,'S-',num2str(omega(1)),'-',num2str(omega(2)),'-',num2str(omega(3))];
+output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,num2str(CThreshold),filesep,'S-',num2str(omega(1)),'-',num2str(omega(2)),'-',num2str(omega(3))];
 
 mkdir(output_path)
 
@@ -229,8 +229,8 @@ for i = 1:length(hand)
     EF_nearest=cell(length(Vol_target),1);
 
     parfor(j = 1:length(Vol_target),Nthreads)
-        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_target(j,:));
-        [~,~,EFnorm_target(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_target(j,:),0,1e8,method);
+        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_target(j,1:3));
+        [~,~,EFnorm_target(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_target(j,1:3),0,1e8,method);
     end
 
     % test that the interpolation error is not above 10%
@@ -238,8 +238,8 @@ for i = 1:length(hand)
     clear test_point EF_nearest
 
     parfor(j = 1:length(Vol_constraint),Nthreads)
-        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_constraint(j,:));
-        [~,~,EFnorm_constraint(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_constraint(j,:),0,1e8,method);
+        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_constraint(j,1:3));
+        [~,~,EFnorm_constraint(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_constraint(j,1:3),0,1e8,method);
     end
 
     % test that the interpolation error is not above 10%
@@ -261,6 +261,9 @@ for i = 1:length(hand)
         end
     end
 
+    % Carry coordinates for fiber targeting optimization scheme
+    EnormConstraint{1,2} = Vol_constraint;
+    EnormTarget{1,2} = Vol_target;
     %% Optimization
     
     for k = 1:length(relaxation)
@@ -291,12 +294,13 @@ for i = 1:length(hand)
         wc = omega(2);
         ws = omega(3);
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100;
+        %scores = (relaxation/100-pSpill_target*100)^2;
 
         [desc_order,idx] = sort(scores, 'descend');
         best_idx = idx(1);
 
 
-        %write results to .txt
+        % write results to .txt
         fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'w+');
         fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
@@ -375,12 +379,8 @@ for i = 1:length(hand)
 
         ax.YLim(1)=ax.YLim(1)-fac*norm(ax.YLim(1)-ax.YLim(2));
         ax.YLim(2)=ax.YLim(2)+fac*norm(ax.YLim(1)-ax.YLim(2));
-        %camlight("headlight")
         axis(ax,'equal')
         light("Position",[-1 0 0],"Style","infinite")
-        %try closing and opening suggestion file
-        %system(['killall TextEdit ']);
-        %system(['open -a TextEdit ' fullfile( pat_path,append(hand{i},'_suggestion.txt') ) ]);
 
 
         fig1=figure('visible','off');
@@ -424,31 +424,31 @@ toc
 
 end
 
-function plot_VTA(EFstruct,alpha,isolevel,best_idx,VTAfig)
-contactnames = fieldnames(EFstruct);
-for i=1:length(contactnames)
-
-    EFinitial=EFstruct.(contactnames{i});
-    EF(:,1:3) = EFinitial(:,1:3);
-    EF(:,5:7) = alpha(i)*EFinitial(:,5:7);
-    EF(:,8) = sqrt(sum(EF(:,5:7).^2,2));
-
-    is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
-    EF_activated = EF(is_activated,1:3);
-
-
-    shp=alphaShape(EF_activated (:,1),EF_activated(:,2),EF_activated(:,3));
-
-    if i == best_idx
-
-        plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Parent',VTAfig)
-        hold(VTAfig,'on')
-    else
-
-        plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Visible','off','Parent',VTAfig)
-        hold(VTAfig,'on')
-    end
-end
-
-end
+% function plot_VTA(EFstruct,alpha,isolevel,best_idx,VTAfig)
+% contactnames = fieldnames(EFstruct);
+% for i=1:length(contactnames)
+% 
+%     EFinitial=EFstruct.(contactnames{i});
+%     EF(:,1:3) = EFinitial(:,1:3);
+%     EF(:,5:7) = alpha(i)*EFinitial(:,5:7);
+%     EF(:,8) = sqrt(sum(EF(:,5:7).^2,2));
+% 
+%     is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
+%     EF_activated = EF(is_activated,1:3);
+% 
+% 
+%     shp=alphaShape(EF_activated (:,1),EF_activated(:,2),EF_activated(:,3));
+% 
+%     if i == best_idx
+% 
+%         plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Parent',VTAfig)
+%         hold(VTAfig,'on')
+%     else
+% 
+%         plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Visible','off','Parent',VTAfig)
+%         hold(VTAfig,'on')
+%     end
+% end
+% 
+% end
 end

@@ -44,8 +44,8 @@ end
         models{j} = model;
 
         dataEnorm{j} = mpheval(model,{'x','y','z','ec.normE'},'selection','geom1_sel11');
-        dataEnormTarget{j} = mphinterp(model,'ec.normE','coord',Vol_target');
-        dataEnormConstraint{j} = mphinterp(model,'ec.normE','coord',Vol_constraint');
+        dataEnormTarget{j} = mphinterp(model,'ec.normE','coord',Vol_target(:,1:3)');
+        dataEnormConstraint{j} = mphinterp(model,'ec.normE','coord',Vol_constraint(:,1:3)');
         if contains(target_names{1,1},'tract')
         dataEnormTargetFibs{j} = mphinterp(model,'ec.normE','coord',Targetfibs(:,1:3)','dataset','dset1');
         dataEnormConstraintFibs{j} = mphinterp(model,'ec.normE','coord',Constraintfibs(:,1:3)','dataset','dset1');
@@ -81,9 +81,9 @@ end
 
     if computeTargetCoverage
         mkdir(append(pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,'Coverages'))
-        fid=fopen(append(pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,'Coverages',filesep,'Coverages_',space,'_',hand,'.txt'),'w');
+        fid=fopen(append(pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,'Coverages',filesep,'Coverages_',space,'_',hand,'_pointwise.txt'),'w');
         fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t EThreshold %s \t  Target Coverage \t Spill \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
-        if contains(target_names{1,1},'tract')
+        if contains(target_names{1,1},'XYZ')% contains(target_names{1,1},'tract')
             for j=1:size(clinicalSettings,1)
                 [afibs,pActTarget{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormTargetFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
@@ -93,20 +93,22 @@ end
                 [pActTarget{j},pActSpill{j},~] = volume_of_tissue_activated(dataEnorm{j},Vol_target,R,head,leadvector,EThresh(j));
             end
         end
-        if contains(constraint_names,'tract')
+        if contains(constraint_names,'XYZ') % contains(target_names{1,1},'tract')
             for j=1:size(clinicalSettings,1)
 
                 [afibs,pActConstraint{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormConstraintFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
             end
         else
+            for j=1:size(clinicalSettings,1)
             [pActConstraint{j},~,~] = volume_of_tissue_activated(dataEnorm{j},Vol_constraint,R,head,leadvector,EThresh(j));
+            end
         end
 
         
 
         for j=1:size(clinicalSettings,1)
-            fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', ...
+            fprintf(fid,' %s \t\t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', ...
                 clinicalSettings{j},num2str(clinicalSettings{j,2}),...
                 num2str(clinicalSettings{j,3}),num2str(EThresh(j)),...
                 num2str(pActTarget{j}),num2str(pActSpill{j}),...
@@ -114,6 +116,39 @@ end
         end
         fclose(fid);
     end
+        % 1) Open .txt file
+        mkdir(append(pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,'alphaShapeCoverages'))
+        fid=fopen(append(pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,'alphaShapeCoverages',filesep,'alphaShapeCoverages_',space,'_',hand,'.txt'),'w');
+        fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t EThreshold %s \t  VTA volume [mm^3] \t Target Coverage \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
+
+        % 2) Compute alphaShape of Targets and Constraints
+        shpTarget = alphaShape(Vol_target(:,1:3));
+        shpConstraint = alphaShape(Vol_constraint(:,1:3));
+        % 3) Compute alphaShape of VTA
+        for j=1:size(clinicalSettings,1)
+            idx = dataEnorm{j}.d4>EThresh(j);
+            VTA = [dataEnorm{j}.d1(idx)',dataEnorm{j}.d2(idx)',dataEnorm{j}.d3(idx)'];
+            shpVTA{j} = alphaShape(VTA);
+        
+        % 4) Compute overlaps and percentages i.e. overlap volume/VTA volume
+            id1 = inShape(shpVTA{j},Vol_target(:,1:3));
+            id2 = inShape(shpTarget,VTA);
+            shpIntersectionTarget{j} = alphaShape([VTA(id2,1); Vol_target(id1,1)], ...
+            [VTA(id2,2); Vol_target(id1,2)],[VTA(id2,3); Vol_target(id1,3)]);
+
+            id1 = inShape(shpVTA{j},Vol_constraint(:,1:3));
+            id2 = inShape(shpConstraint,VTA);
+            shpIntersectionConstraint{j} = alphaShape([VTA(id2,1); Vol_constraint(id1,1)], ...
+            [VTA(id2,2); Vol_constraint(id1,2)],[VTA(id2,3); Vol_constraint(id1,3)]);
+        end
+        % 5) Save to .txt and close .txt file
+        fprintf(fid,' %s \t\t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', ...
+                clinicalSettings{j},num2str(clinicalSettings{j,2}),...
+                num2str(clinicalSettings{j,3}),num2str(EThresh(j)),...
+                num2str(volume(shpVTA{j})*1e9),num2str(100*volume(shpIntersectionTarget{j})/volume(shpVTA{j})),...
+                num2str(100*volume(shpIntersectionConstraint{j})/volume(shpVTA{j})));
+        fclose(fid);
+
 
 
 out = 1;
@@ -124,5 +159,5 @@ end
                 %spill{j} = sum(dataEnorm{j}.d1>=EThresh(j));
 
 
-
+             
 

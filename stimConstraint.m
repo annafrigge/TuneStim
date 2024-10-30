@@ -1,40 +1,30 @@
-function [c,ceq] = stimConstraint(alpha,EF_constraint,EFobj_constraint,cou)
+function [c,ceq] = stimConstraint(alpha,Enorm,Eobj,relaxation)
 
 % Constraint function for a specific value of the scaling factor alpha. 
-
-% Input Arguments:
-% ----------------
+% Input:
 % alpha     = current scaling factor
-% EFL       = coordinates of constraint areas (limbic and internal capsule) 
-% EFobjL    = target values (x,y,z,E-field) for the points in EFL
-% cou       = couplings constants to composition E-field from E-fields 
-%             computed with all but one contact grounded                    
+% Enorm     = Enorm of constraint areas for unit pulse
+% EFobjL    = target values (x,y,z,E-field) for the points in EFL          
 % Output:
-% -------
 % c(x)      = array of nonlinear inequality constraints at x. fmincon 
 %             attempts to satisfy c(x)<=0 for all entries of c.
 % ceq(x)    = array of nonlinear equality constraints at x.
 
-%EFscaled = zeros(length(EF_constraint),8);
-cs = zeros(length(EF_constraint),1);
-contactnames = fieldnames(EF_constraint);
-EFscaled = zeros(length(EF_constraint),4);
-for k=1:length(EF_constraint)
-    EFscaled(k,:) = scale_EF(EF_constraint(k),cou,alpha,contactnames);
-    cs(k) = EFscaled(k,4) - EFobj_constraint;    % compare electric field (here 
-                                            % column 4 corresponds to EF)
+Escaled = alpha*Enorm;
+
+diffs = Escaled-Eobj;
+
+% sort the differences between scaled E-field and target E-field
+diffs = sort(diffs);
+
+n = length(diffs);
+if relaxation == 0
+    relaxation = 0.03;
 end
-
-
-cs = sort(cs);
-
-n = length(cs);
-pConstraint = 0.9;
-nindex = floor(n*pConstraint); % floor rounds toward negative infinity
+nindex = floor(n*relaxation/100); % floor rounds toward negative infinity
+                               % e.g. floor(3.4) = 3, floor(-10,1) = -11
 
 % use the (almost) largest difference as basis for constraint 
-c = cs(1:nindex);
+c = [diffs(end-nindex) -alpha alpha-15];
 
 ceq = [];
-
-end

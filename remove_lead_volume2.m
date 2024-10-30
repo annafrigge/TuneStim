@@ -28,7 +28,7 @@ R_cyl=((0.00127/2)+0.0005);
 i=1;
 j=1;
 for row=1:length(V(:,1))
-    P = (Rotation'*(V(row,:)- translation_factor)')';
+    P = (Rotation'*(V(row,1:3)- translation_factor)')';
     [theta,rho,z] = cart2pol(P(1),P(2),P(3));
     
     if rho <= R_cyl && z <= z_cyl && z >= 0

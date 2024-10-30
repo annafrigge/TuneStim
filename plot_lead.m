@@ -29,7 +29,9 @@ function plot_lead(pat_path,bestSolution,hand,space)
     model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
  
     model.result('pg2').run;
+    figure
     mphplot(model,'pg2');
+    hold on
     %camlight
     % dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
     % idx = dataEnorm.d1>=200;

@@ -59,12 +59,12 @@ for k = 1:numel(S)
                 logx = (r(:,1) <= max(1)) & (r(:,1) >= min(1));
                 logy = (r(:,2) <= max(2)) & (r(:,2) >= min(2));
                 logz = (r(:,3) <= max(3)) & (r(:,3) >= min(3));
-                roi = r(logx & logy & logz,1:3); 
+                roi = r(logx & logy & logz,:); 
                 
                 
                 if ~isempty(r)
                      t = t+1;
-                     target{t} = roi(:,1:3);
+                     target{t} = roi(:,:);
                 end
                 
 
@@ -78,11 +78,11 @@ for k = 1:numel(S)
                 logx = (r(:,1) <= max(1)) & (r(:,1) >= min(1));
                 logy = (r(:,2) <= max(2)) & (r(:,2) >= min(2));
                 logz = (r(:,3) <= max(3)) & (r(:,3) >= min(3));
-                roi = r(logx & logy & logz,1:3);
+                roi = r(logx & logy & logz,:);
                 
                 if ~isempty(r)
                      c = c+1;
-                     constraint{c} = roi(:,1:3);
+                     constraint{c} = roi(:,:);
                 end
                 
            end
