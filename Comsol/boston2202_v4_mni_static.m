@@ -1,5 +1,5 @@
-function out = boston2202_v4_mni_static(pat,pat_path,hand,...
-               space, activeContacts1, activeContacts2, I0, output_path)
+function out = boston2202_v4_mni_static(pat.name,pat.path,hand,...
+               pat.space, activeContacts1, activeContacts2, I0, pat.outputPath)
 %
 % addpath('/sw/apps/comsol/x86_64/6.0/mli');
 % 
@@ -41,7 +41,7 @@ model.study('std1').feature('stat').activate('ec', true);
 % importing anchor parameters from file
 %model.param.loadFile(append('C:\Users\annfr888\Documents\DBS\code\',...
 %                           'Comsol code\models\anchor_lead_parameters_v4.txt'));
-%model.param.loadFile(append(pat_path,'\',pat,'_lead_parameters_',hand,...
+%model.param.loadFile(append(pat.path,'\',pat.name,'_lead_parameters_',hand,...
 %                     '.txt'));
 
 %%
@@ -173,7 +173,7 @@ model.component('comp1').physics('ec').feature('cucn1').set('sigma', [0.1 0 0 0 
 % loading conductivity map 
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
-model.func('int1').set('filename', append(pat_path,'conductivity_map_',hand,'_native.csv'));
+model.func('int1').set('filename', append(pat.path,'conductivity_map_',hand,'_native.csv'));
 model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
 model.func('int1').importData;
 model.func('int1').set('interp', 'neighbor');
@@ -280,8 +280,8 @@ model.sol('sol1').runAll;
 model.sol('sol1').runAll;
 
 % Switch to patient-specific paramters
-model.param.loadFile(append(pat_path,'lead_parameters_',...
-                     space,'_',hand,'.txt'));
+model.param.loadFile(append(pat.path,'lead_parameters_',...
+                     pat.space,'_',hand,'.txt'));
 model.param.set('I0', num2str(I0));            
                  
 model.component('comp1').geom('geom1').run('fin');
@@ -305,7 +305,7 @@ if ~strcmp(activeContacts2,'none')
     model.component('comp1').physics('ec').feature('term2').active(true);
     model.component('comp1').physics('ec').feature('term2').selection.named('geom1_csel2_bnd');
     
-    model.result.export('data1').set('filename', append(output_path,'V_EF_bipolar_',...
+    model.result.export('data1').set('filename', append(pat.outputPath,'V_EF_bipolar_',...
                                  activeContacts1_string,'_', activeContacts2_string, '_',num2str(I0*1e3),'mA.csv'));
 end
 

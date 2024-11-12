@@ -1,11 +1,11 @@
 function get_target_constraint_in_native(options,names)
 
 % Based on lead-dbs function ea_ptspecific_atl, this function warps the
-% targets and constraints, defined in names, to native space
+% targets and constraints, defined in names, to native pat.space
 
 
 troot=[options.earoot,'templates',filesep]; %template root
-aroot=[ea_space(options,'atlases'),options.atlasset,filesep]; %atlas root
+aroot=[ea_space(options,'atlases'),options.atlasset,filesep]; %cohort.atlas root
 proot=[options.patientname,filesep]; %patient root
 
 load([proot,'atlases',filesep,options.atlasset,filesep,'neurostructures.mat'],'region'); 
@@ -41,10 +41,10 @@ end
 
 function ea_warp_atlas_to_native(troot,aroot,proot,force,options,names)
 
-sroot = ea_space(options,'space');
+sroot = ea_space(options,'pat.space');
 
 if ~exist([aroot,'atlas_index.mat'],'file')
-    ea_error('Please visualize this atlas in MNI space once before visualizing the atlas in native space.');
+    ea_error('Please visualize this atlas in MNI pat.space once before visualizing the atlas in native pat.space.');
 else
     load([aroot,'atlas_index.mat']);
 end
@@ -109,7 +109,7 @@ for n = 1:length(names)
 end
 
 p =load([proot,'atlases',filesep,options.atlasset,filesep,'atlas_index.mat']);
-p.atlases.rebuild=1;
+p.atlases.cohort.rebuild=1;
 
 save([proot,'atlases',filesep,options.atlasset,filesep,'atlas_index.mat'],'-struct','p');
 

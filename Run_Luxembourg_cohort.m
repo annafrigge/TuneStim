@@ -20,15 +20,15 @@ leads = {'Boston Scientific 2202','Boston Scientific 2202',...
          'Boston Scientific 2202','Boston Scientific 2202'};
 orientations = {[25.4,267.1],[133.2,206.9],[0,0],[218.3,268.6]};
 atlas = 'DISTAL Minimal (Ewert 2017)';
-target_names = {'STN_motor.nii.gz'};
-constraint_names = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
-optischeme = 'conservative';% 'mincov';%
-EThreshold = 200;
+cohort.targets = {'STN_motor.nii.gz'};
+cohort.constraints = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
+cohort.optischeme = 'conservative';% 'mincov';%
+cohort.EThreshold = 200;
 relaxation = 0:10:90;
-Nthreads = 1;
-space = 'MNI';
-plotoption = 0;
-rebuild = 1;
+cohort.threads = 1;
+pat.space = 'MNI';
+cohort.plotoption = 0;
+cohort.rebuild = 1;
 %hand = {"sin","dx"};
 hand = {"dx"};
 
@@ -37,13 +37,13 @@ scoretype = 'score2';
 %% Running optimization algorithm of choice for all patients
 for i=1:1%length(pat_names)
     disp(append('Patient ',pat_names(i,:),' loading ...'))
-    pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+    pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
     %if strcmp(leads{1,i},'Boston Scientific 2202')
     %    continue
     %end
     lead = leads{1,i};
-    lead_orientation = orientations{1,i};
+    pat.orientation = orientations{1,i};
 
-    main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,scoretype,rebuild)  
+    main(pat.path,hand,lead,pat.orientation,atlas,cohort.targets,cohort.constraints,cohort.optischeme,cohort.EThreshold,relaxation,cohort.threads,pat.space,cohort.plotoption,scoretype,cohort.rebuild)  
 
 end

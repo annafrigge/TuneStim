@@ -1,4 +1,4 @@
-function out = runComsol(pat_path,hand,space,nProc,lead)
+function out = runComsol(pat.path,hand,pat.space,nProc,lead)
 disp(nProc)
 %addpath('/sw/apps/comsol/x86_64/6.0/mli');
 %addpath('C:\Program Files\COMSOL\COMSOL56\Multiphysics\bin\win64')
@@ -58,7 +58,7 @@ comsolPorts = 2036:1:2036+nProc ;
 try parpool(nProc); end
 
 %switch to the actual patient of choice
-lead_path = append(pat_path,'lead_parameters_',space,...
+lead_path = append(pat.path,'lead_parameters_',pat.space,...
                             '_',hand,'.txt');
 model.param.loadFile(lead_path);
 
@@ -77,8 +77,8 @@ model.component('comp1').probe('bnd8').genResult('none');
 model.func.remove('int1');
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
-if strcmp(space,'native')
-    model.func('int1').set('filename', append(pat_path,'conductivity_map_',hand,'_native.csv'));
+if strcmp(pat.space,'native')
+    model.func('int1').set('filename', append(pat.path,'conductivity_map_',hand,'_native.csv'));
 else
     model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',hand,'_MNI.csv'));
 end
@@ -134,12 +134,12 @@ model.sol('sol1').runAll;
 
 
 % determining coupling constants by keeping inactive contacts floating 
-mkdir(append(pat_path,'EFdistribution_',hand,'_1mA'));
+mkdir(append(pat.path,'EFdistribution_',hand,'_1mA'));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
-name = append(pat_path,'DBS_simulation.mph');
+name = append(pat.path,'DBS_simulation.mph');
 mphsave(model,name)
 
 
@@ -159,7 +159,7 @@ tic
         end
        
         try 
-            EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
+            EF_for_config(i,name,pat.path,hand,coupl_combos,lead,EfieldFrame)
         catch ME
             disp(comsolPort)
             disp(ME)
@@ -170,7 +170,7 @@ out = model;
 disp('comsol done')
 end
 
-function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
+function EF_for_config(i,name,pat.path,hand,coupl_combos,lead,EfieldFrame)
     
     model = mphload(name);
     % deactivating current density on all contacts
@@ -418,12 +418,12 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
         dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel41');
 
         data = [dataV.p',dataV.d1',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
-        writematrix(data,append(pat_path,...
+        writematrix(data,append(pat.path,...
             'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos(i,:),'_', ...
             hand,'_1mA_gnd.csv'),'Delimiter',',');
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
-        model.result.export('data1').set('filename', append(pat_path,...
+        model.result.export('data1').set('filename', append(pat.path,...
             'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos(i,:),'_', ...
             hand,'_1mA_gnd.csv'));
         model.result.export('data1').run;

@@ -1,4 +1,4 @@
-function out = runComsolTerminal(pat_path,hand,space,nProc,lead)
+function out = run_comsol_terminal(pat,nProc)
 disp(nProc)
 %addpath('/sw/apps/comsol/x86_64/6.0/mli');
 %addpath('C:\Program Files\COMSOL\COMSOL56\Multiphysics\bin\win64')
@@ -20,22 +20,25 @@ import com.comsol.model.*
 import com.comsol.model.util.*
 
 
-if strcmp(lead,'Boston Scientific 2202')
+if strcmp(pat.lead,'Boston Scientific 2202')
     disp('Loading Boston 2202 lead')
     modelname = 'bostonsctf_simulationTerminal.mph';
-elseif strcmp(lead,'S:t Jude 1331')
+elseif strcmp(pat.lead,'S:t Jude 1331')
     disp('Loading Stjude 1331 lead')
     modelname = 'stjude1331_simulationTerminal.mph';
-elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
     disp('Loading Boston Scientific Vercise Cartesia')
     modelname = 'bostonsctf_vercartesia_simulation.mph';
+elseif strcmp(pat.lead,'Medtronic 3887')
+    disp('Loading Medtronic 3887')
+    modelname = 'medtronic3887_simulationTerminal.mph';
 end
 
 
 %load lead-specific model
 model = mphload(modelname);
 
-if strcmp(lead,'Boston Scientific 2202') || strcmp(lead,'S:t Jude 1331')
+if strcmp(pat.lead,'Boston Scientific 2202') || strcmp(pat.lead,'S:t Jude 1331')
 % coupling combinations (H=Horizontal combination, V=Vertical combination)
 coupl_combos = {'C1X'; 'C2A'; 'C2B'; 'C2C'; 'C3A';...
             'C3B'; 'C3C'; 'C4X';...
@@ -47,7 +50,7 @@ coupl_combos = {'C1X'; 'C2A'; 'C2B'; 'C2C'; 'C3A';...
             'C4X_C3A';'C4X_C3B';'C4X_C3C';...
             'C2A_C3B';'C2A_C3C';'C2B_C3A';...
             'C2B_C3C';'C2C_C3A';'C2C_C3B'};
-elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
     coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
                  'Duo_1_2'; 'Duo_2_3'; 'Duo_3_4'; 'Duo_4_5'; 'Duo_5_6';...
@@ -58,8 +61,8 @@ comsolPorts = 2036:1:2036+nProc ;
 try parpool(nProc); end
 
 %switch to the actual patient of choice
-lead_path = append(pat_path,'lead_parameters_',space,...
-                            '_',hand,'.txt');
+lead_path = append(pat.path,'lead_parameters_',pat.space,...
+                            '_',pat.hand,'.txt');
 model.param.loadFile(lead_path);
 
 model.component('comp1').geom('geom1').run('fin');
@@ -77,10 +80,10 @@ model.component('comp1').probe('bnd8').genResult('none');
 model.func.remove('int1');
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
-if strcmp(space,'native')
-    model.func('int1').set('filename', append(pat_path,'conductivity_map_',hand,'_native.csv'));
+if strcmp(pat.space,'native')
+    model.func('int1').set('filename', append(pat.path,'conductivity_map_',pat.hand,'_native.csv'));
 else
-    model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',hand,'_MNI.csv'));
+    model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',pat.hand,'_MNI.csv'));
 end
 model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
 model.func('int1').importData;
@@ -134,12 +137,12 @@ model.sol('sol1').runAll;
 
 
 % determining coupling constants by keeping inactive contacts floating 
-mkdir(append(pat_path,'EFdistribution_',hand,'_1mA'));
+mkdir(append(pat.path,'EFdistribution_',pat.hand,'_1mA'));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
-name = append(pat_path,'DBS_simulation.mph');
+name = append(pat.path,'DBS_simulation.mph');
 mphsave(model,name)
 
 
@@ -158,7 +161,7 @@ tic
         end
        
         try 
-            EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
+            EF_for_config(i,name,pat.path,pat.hand,coupl_combos,pat.lead,EfieldFrame)
         catch ME
             disp(comsolPort)
             disp(ME)
@@ -169,7 +172,7 @@ out = model;
 disp('comsol done')
 end
 
-function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
+function EF_for_config(i,name,pat,coupl_combos,EfieldFrame)
     
     model = mphload(name);
 
@@ -179,7 +182,7 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
     model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel9');
 
      
-    if strcmp(lead,'Boston Scientific 2202') || strcmp(lead,'S:t Jude 1331')
+    if strcmp(pat.lead,'Boston Scientific 2202') || strcmp(pat.lead,'S:t Jude 1331')
         model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
     switch i
         case 1 % contact 1
@@ -301,7 +304,7 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
             model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
     end
-    elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+    elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
         switch i
         
         case 1 % contact 1
@@ -386,14 +389,14 @@ function EF_for_config(i,name,pat_path,hand,coupl_combos,lead,EfieldFrame)
         dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
 
         data = [dataV.p',dataV.d1',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
-        writematrix(data,append(pat_path,...
-            'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
+        writematrix(data,append(pat.path,...
+            'EFdistribution_',pat.hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
             hand,'_1mA_gnd.csv'),'Delimiter',',');
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
-        model.result.export('data1').set('filename', append(pat_path,...
-            'EFdistribution_',hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
-            hand,'_1mA_gnd.csv'));
+        model.result.export('data1').set('filename', append(pat.path,...
+            'EFdistribution_',pat.hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
+            pat.hand,'_1mA_gnd.csv'));
         model.result.export('data1').run;
     end
     model.component('comp1').geom('geom1').selection.remove('csel1.bnd');

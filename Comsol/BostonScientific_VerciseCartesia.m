@@ -8,18 +8,18 @@ function out = BostonScientific_Vercise_Cartesia()
 %
 % Model exported on Jan 26 2022, 13:50 by COMSOL 5.6.0.401.
 
-pat = 'PilotDBS_1';
-pat_path = append('C:\Users\annfr888\Documents\DBS\patient_data\',...
-                  pat,'\');
+pat.name = 'PilotDBS_1';
+pat.path = append('C:\Users\annfr888\Documents\DBS\patient_data\',...
+                  pat.name,'\');
 
 hand = 'dx';
-space = 'native';
+pat.space = 'native';
 
 % CALL to lead_parameters function 
 
-%pat_path = append('C:\Users\annfr888\Documents\DBS\results\',...
-%                  pat,'\');
-%pat_path = append('/proj/snic2021-22-840/nobackup/Anna/',pat,'/');
+%pat.path = append('C:\Users\annfr888\Documents\DBS\results\',...
+%                  pat.name,'\');
+%pat.path = append('/proj/snic2021-22-840/nobackup/Anna/',pat.name,'/');
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -47,7 +47,7 @@ model.study('std1').feature('stat').activate('ec', true);
 % importing anchor parameters from file
 %model.param.loadFile(append('C:\Users\annfr888\Documents\DBS\code\',...
 %                           'Comsol code\models\anchor_lead_parameters_v4.txt'));
-%model.param.loadFile(append(pat_path,'\',pat,'_lead_parameters_',hand,...
+%model.param.loadFile(append(pat.path,'\',pat.name,'_lead_parameters_',hand,...
 %                     '.txt'));
 
 %%
@@ -274,7 +274,7 @@ model.component('comp1').physics('ec').feature('cucn1').set('sigma', [0.1 0 0 0 
 % loading conductivity map 
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
-model.func('int1').set('filename', append(pat_path,pat,'_conductivity_map_',hand,'.csv'));
+model.func('int1').set('filename', append(pat.path,pat.name,'_conductivity_map_',hand,'.csv'));
 %model.func('int1').set('filename', 'C:\Users\annfr888\Documents\DBS\results\pre_op.csv');
 %model.func('int1').set('filename', '/proj/snic2021-22-840/nobackup/Anna/pre_op.csv');
 model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
@@ -527,7 +527,7 @@ model.sol('sol1').attach('std1');
 model.sol('sol1').runAll;
 
 % switch to the actual patient of choice
-model.param.loadFile(append(pat_path,'\',pat,'_lead_parameters_',space,...
+model.param.loadFile(append(pat.path,'\',pat.name,'_lead_parameters_',pat.space,...
                             '_',hand,'.txt'));
 model.component('comp1').geom('geom1').run('fin');
 
@@ -573,7 +573,7 @@ model.sol('sol1').runAll;
 contacts = ['1X';'2A';'2B';'2C';'3A';'3B';'3C';'4X'];
 
 % looping over all grounded-one active 1V contact
-mkdir(append(pat_path,'VEF_',hand,'_1mA\'));
+mkdir(append(pat.path,'VEF_',hand,'_1mA\'));
 
 
 % Include Parallelization here?
@@ -634,10 +634,10 @@ model.sol('sol1').runAll;
 
 
 % export electric field data
-model.result.export('data1').set('filename', append(pat_path,...
+model.result.export('data1').set('filename', append(pat.path,...
                                  'VEF_',hand,'_1mA\V_EF_cont_',contacts(i,:),'_', ...
                                  hand,'_1mA_gnd.csv'));
-%model.result.export('data1').set('filename', append(pat_path,...
+%model.result.export('data1').set('filename', append(pat.path,...
 %                                 'VEF_',hand,'\V_EF_cont_',contacts(i,:),'_', ...
 %                                 hand,'_1V_gnd.csv'));
 model.result.export('data1').run;
@@ -656,7 +656,7 @@ coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
 
 
 % determining coupling constants by keeping inactive contacts floating 
-mkdir(append(pat_path,'CouplingMatrix_',hand,'_1mA'));
+mkdir(append(pat.path,'CouplingMatrix_',hand,'_1mA'));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false);
@@ -763,7 +763,7 @@ model.sol('sol1').runAll;
 
 
 % export coupling constants
-model.result.export('tbl1').set('filename', append(pat_path,...
+model.result.export('tbl1').set('filename', append(pat.path,...
                                 'CouplingMatrix_',hand,'_1mA\',...
                                 coupl_combos(i,:),'.csv'));
 model.result.export('tbl1').run;
@@ -771,7 +771,7 @@ model.result.export('tbl1').run;
 
 end
 
-% plotting electric field together with lead geometry (pat 3 sin
+% plotting electric field together with lead geometry (pat.name 3 sin
 % selections)
 model.result.create('pg2', 'PlotGroup3D');
 model.result('pg2').label('Electric field norm');

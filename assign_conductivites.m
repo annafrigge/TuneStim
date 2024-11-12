@@ -1,4 +1,4 @@
-function assign_conductivites(pat_path,hand,space)
+function assign_conductivites(pat)
 
 % Summary  
 % --------
@@ -12,19 +12,19 @@ function assign_conductivites(pat_path,hand,space)
 
 % Input
 % ------
-% pat_path  :   (str) the path to the patient directory
+% pat.path  :   (str) the path to the patient directory
 % hand  :       (str) dx or sin, corresponding to the right or left
 %               hemisphere
-% space
+% pat.space
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
   
 % load lead parameters
-opts = detectImportOptions(append(pat_path,'lead_parameters_',...
-                           space,'_',hand,'.txt'));
-lead_parameters = readtable(append(pat_path,'lead_parameters_',...
-                           space,'_',hand,'.txt'),opts);
+opts = detectImportOptions(append(pat.path,'lead_parameters_',...
+                           pat.space,'_',pat.hand,'.txt'));
+lead_parameters = readtable(append(pat.path,'lead_parameters_',...
+                           pat.space,'_',pat.hand,'.txt'),opts);
 
 head = table2array(lead_parameters(3:5,2))';
 tail = table2array(lead_parameters(7:9,2))';
@@ -32,9 +32,9 @@ tail = table2array(lead_parameters(7:9,2))';
 
 %% read intensity values and coordinates from file
 
-GM = fullfile(pat_path,'c1wt1.nii');
-WM = fullfile(pat_path,'c2wt1.nii');
-CSF = fullfile(pat_path,'c3wt1.nii');
+GM = fullfile(pat.path,'c1wt1.nii');
+WM = fullfile(pat.path,'c2wt1.nii');
+CSF = fullfile(pat.path,'c3wt1.nii');
 
 %grey matter
 volumeInfo = spm_vol(GM);
@@ -127,7 +127,7 @@ conductivity_map = conductivity_map(logical,:);
 conductivity_map(conductivity_map(:,:)==0) = 0.1;
 % write to file
 writematrix(conductivity_map,...
-           append(pat_path,'conductivity_map','_',hand,'_',space,'.csv'))
+           append(pat.path,'conductivity_map','_',pat.hand,'_',pat.space,'.csv'))
 
 
 

@@ -344,7 +344,7 @@ fprintf('done \n')
 % options.prefs.ixi.meanage = 60;
 % options.prefs.ixi.dir = '';
 % options.prefs.ltx.pdfconverter = '';
-% options.prefs.genetics.dbdir = 'C:\Users\annfr888\Documents\MATLAB\lead\templates\space\MNI_ICBM_2009b_NLIN_ASYM\genetics\';
+% options.prefs.genetics.dbdir = 'C:\Users\annfr888\Documents\MATLAB\lead\templates\pat.space\MNI_ICBM_2009b_NLIN_ASYM\genetics\';
 % options.prefs.platform.glnxa64.load_shipped_runtime = false;
 % options.prefs.platform.maci64.load_shipped_runtime = false;
 % options.prefs.platform.win64.load_shipped_runtime = false;
@@ -395,7 +395,7 @@ fprintf('done \n')
 % options.prefs.machine.normsettings.spmnewseg_scalereg = 1;
 % options.prefs.machine.normsettings.ants_reinforcetargets = 0;
 % options.prefs.machine.normsettings.ants_usepreexisting = 1;
-% options.prefs.machine.space = 'MNI_ICBM_2009b_NLIN_ASYM';
+% options.prefs.machine.pat.space = 'MNI_ICBM_2009b_NLIN_ASYM';
 % options.prefs.machine.togglestates.cutview = '3d';
 % options.prefs.machine.togglestates.refreshcuts = 0;
 % options.prefs.machine.togglestates.refreshview = 0;

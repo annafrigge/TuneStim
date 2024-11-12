@@ -1,4 +1,4 @@
-function AllTracts = concat_fibertracts(region,space,tract_names,hand)
+function AllTracts = concat_fibertracts(region,pat,tract_names,hand)
 %side 1 = lh, 2 = rh
     if strcmp(hand,'sin')
         side = 1;
@@ -6,9 +6,9 @@ function AllTracts = concat_fibertracts(region,space,tract_names,hand)
         side = 2;
     end
 
-idxTracts = contains({region.(space).name{:,side}},tract_names)';
+idxTracts = contains({region.(pat.space).name{:,side}},tract_names)';
 
-TractCoords = region.(space).coords(idxTracts,side);
+TractCoords = region.(pat.space).coords(idxTracts,side);
 m = 0;
 for i=1:sum(idxTracts)
     AllTracts = [TractCoords{i}(:,1:3) TractCoords{i}(:,4)+m];

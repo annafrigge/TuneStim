@@ -1,11 +1,11 @@
-function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
+function plot_target_and_constraint(pat.path,atlas,areas,hand,pat.space,VTAfig)
 
-% plots the targets, constraints and lead in native space by using the
+% plots the targets, constraints and lead in native pat.space by using the
 % leadDBS-generated ROI-data. The lead cylinder is also plotted.
 
 % Input Arguments
 % ---------------
-% pat_path : str, path to patient directory where the atlases are stored
+% pat.path : str, path to patient directory where the atlases are stored
 %
 % atlas : str, name of the atlas from which the target and constraint were taken
 % 
@@ -26,9 +26,9 @@ function plot_target_and_constraint(pat_path,atlas,areas,hand,space,VTAfig)
         side = 2;
     end
     
-    load(append(pat_path,'atlases/',atlas,'/neurostructures.mat'),'region')
+    load(append(pat.path,'atlases/',atlas,'/neurostructures.mat'),'region')
     
-    if strcmp(space,'native')
+    if strcmp(pat.space,'native')
         region = region.native;
     else
         region=region.MNI;

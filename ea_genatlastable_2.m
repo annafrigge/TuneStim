@@ -113,7 +113,7 @@ if checkrebuild(atlases,options,root,mifix)
     end
     maxcolor = size(atlases.colormap,1);
 
-    for nativemni=nm % switch between native and mni space atlases.
+    for nativemni=nm % switch between native and mni pat.space atlases.
         switch nativemni
             case 1
                 root=fileparts(ea_space([],'atlases'));
@@ -176,7 +176,7 @@ if checkrebuild(atlases,options,root,mifix)
                     if ~isempty(xx)
                         XYZ.vx=[xx,yy,zz]; % concatenate points to one matrix.
                         XYZ.val=vv;
-                        XYZ.mm=ea_vox2mm(XYZ.vx,structure.nii.mat); % map to mm-space
+                        XYZ.mm=ea_vox2mm(XYZ.vx,structure.nii.mat); % map to mm-pat.space
                         XYZ.dims=structure.nii.voxsize;
                     else
                         XYZ.vx=[];
@@ -288,7 +288,7 @@ if checkrebuild(atlases,options,root,mifix)
         try atlases.normals=normals; end
         try atlases.roi=iroi; end
         atlases.version=2.1; % crude versioning introduced (anything without a version tag is considered version 1).
-        atlases.rebuild=0; % always reset rebuild flag.
+        atlases.cohort.rebuild=0; % always reset cohort.rebuild flag.
         try atlases=rmfield(atlases,'cdat'); end % redundancy cleanup
         try atlases=rmfield(atlases,'colorc'); end % redundancy cleanup
         try atlases=rmfield(atlases,'normals'); end % redundancy cleanup
@@ -427,7 +427,7 @@ else
 end
 
 try
-    if atlases.rebuild
+    if atlases.cohort.rebuild
         reb=1;
     end
 end

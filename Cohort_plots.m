@@ -6,7 +6,7 @@ set(0, 'DefaultAxesFontSize', 18);
 cohort_path = 'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study';
 pat_names = ['DBS_104';'DBS_128';'DBS_133';'DBS_139';'DBS_167';...
     'DBS_168';'DBS_171';'DBS_185';'DBS_199';'DBS_204'];
-leads = {'S:t Jude 1331','Boston Scientific 2202', 'S:t Jude 1331',...
+cohort.leads = {'S:t Jude 1331','Boston Scientific 2202', 'S:t Jude 1331',...
          'S:t Jude 1331','Boston Scientific 2202','S:t Jude 1331'...
          'Boston Scientific 2202','S:t Jude 1331',...
          'Boston Scientific 2202','Boston Scientific 2202'};
@@ -14,12 +14,12 @@ orientations = {[293,314],[249,288],[12,302],[25,153],[98,193],[52,345],...
                [32,116],[202,184],16.4,[308,38]};
 
 amplitudes = {[3,2.85],[4.6,1.5],[3.4,4.6],[2.6,2],[1.7,2.6],[3.2,1.5],[1.2,3],[4.4,3.3],[3.8,0],[1,2.4]};
-optischeme = 'conservative';%'Ruben';%'mincov';%%
-atlas = 'DISTAL Minimal (Ewert 2017)';
-target_names = {'STN_motor.nii.gz'};
-constraint_names = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
-space = 'MNI';
-EThreshold = 200;
+cohort.optischeme = 'conservative';%'Ruben';%'mincov';%%
+cohort.atlas = 'DISTAL Minimal (Ewert 2017)';
+cohort.targets = {'STN_motor.nii.gz'};
+cohort.constraints = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
+pat.space = 'MNI';
+cohort.EThreshold = 200;
 relaxation = 0:10:90;
 
 
@@ -38,16 +38,16 @@ for j=1:2
     end
     for i=1:length(pat_names)
         disp(append(pat_names(i,:),' ',hand))
-        pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
         end
         
-        fileName = append(pat_path,'Suggestions',filesep,'STN_motor',...
-            filesep,optischeme,filesep,'100',filesep,'S-1-1-0',...
-            filesep,'Top_Suggestions_',space,'_',...
-            hand,'_',optischeme,'_','.txt');
+        fileName = append(pat.path,'Suggestions',filesep,'STN_motor_tract',...
+            filesep,cohort.optischeme,filesep,'100',filesep,'S-1-1-0',...
+            filesep,'Top_Suggestions_',pat.space,'_',...
+            hand,'_',cohort.optischeme,'_','.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
 
@@ -63,8 +63,8 @@ for j=1:2
         %plot3(relaxation,T.Alpha,T.Target,'Marker','x','LineStyle',':',...
         %    'Color', cm(i,:),'MarkerSize',10,'LineWidth',1)
 
-        %fileNameC = append(pat_path,'Clinical',filesep,...
-        %    'EF_',space,'_',hand,'_clinical','.txt');
+        %fileNameC = append(pat.path,'Clinical',filesep,...
+        %    'EF_',pat.space,'_',hand,'_clinical','.txt');
         %clinicalScore = 2*CovTargetSTNsubsClinical(i,side_nr)-...
         %                CovConstraintSTNsubsClinical(i,side_nr)-...
         %                SpillSTNsubsClinical(i,side_nr);
@@ -88,8 +88,8 @@ xlabel('Relaxation [\%]')
 %ylabel('Amplitude [mA]')
 ylabel('Score')
 %ylabel('Target Coverage [\%]')
-ylim([0,100])
-%ylim([0,10])
+%ylim([0,100])
+ylim([0,50])
 title('\textbf{STN subdivisions}')
 
 set(gca,'TickLabelInterpreter','latex')
@@ -114,12 +114,12 @@ for j=1:2
     end
     for i=1:length(pat_names)
         s=s+1;
-        pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             continue
         end
-        fileName = append(pat_path,'Suggestions',filesep,'STN_motor',...
-            filesep,'DiceScores',filesep,'Dice_',space,'_',hand,'.txt');
+        fileName = append(pat.path,'Suggestions',filesep,'STN_motor',...
+            filesep,'DiceScores',filesep,'Dice_',pat.space,'_',hand,'.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
         T = readtable(fileName,opts);
@@ -166,10 +166,13 @@ exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\Co
 
 %% Clinical Coverages
 hands = {'sin','dx'};
-TargetCoverage = zeros(length(pat_names),2);
-ConstraintCoverage = zeros(length(pat_names),2);
+
 s=0;
 row = 1; % 1 - clinical settings, 2-conservative STN subs,3-conservative STN tracts, 4-Ruben STN subs, 5-Ruben STN tracts
+targets = {'STN_motor';'STN_motor_tract'};
+for k=1:length(targets)
+    TargetPercents = zeros(length(pat_names),2);
+ConstraintPercents = zeros(length(pat_names),2);
 for j=1:2
     hand = convertStringsToChars(hands{j});
     if strcmp(hand,'dx')
@@ -179,47 +182,204 @@ for j=1:2
     end
     for i=1:length(pat_names)
         s=s+1;
-        pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             continue
         end
 
-        fileName = append(pat_path,'Suggestions',filesep,'STN_motor_tract',...
-            filesep,'Coverages',filesep,'Coverages_',space,'_',hand,'_pointwise.txt');
+        fileName = append(pat.path,'Suggestions',filesep,targets{k},...
+            filesep,'Coverages',filesep,'Coverages_',pat.space,'_',hand,'.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
         T = readtable(fileName,opts);
         T.Properties.VariableNames = ["Contacts","Amplitude","PW","Ethresh","TargetCoverage","Spill","ConstraintCoverage"];
         %[~,idx] = max(T.Score);
-        TargetCoverage(i,j) = T.TargetCoverage(row)*100;
-        ConstraintCoverage(i,j) = T.ConstraintCoverage(row)*100;
+        TargetPercents(i,j) = T.TargetCoverage(row)*100;
+        ConstraintPercents(i,j) = T.ConstraintCoverage(row)*100;
     end
 end
-
+if k==1
 figure
-bar(TargetCoverage)
+set(0, 'DefaultAxesFontSize', 12);
+subplot(1,2,1)
 colororder("earth")
+bar(TargetPercents)
+xtickangle(0)
 leg = legend('Sin','Dx');
-leg.Location = 'southeast';
+leg.Location = 'northeast';
 ylabel('Points activated [\%]')
 xlabel('Patient ID')
 ylim([0,100])
-title('Target coverage')
-f=gcf;
-exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\ClinicalSTNTractsCoverageTargetPointWise.png','Resolution',300)
 
-figure
-bar(ConstraintCoverage)
+%figure
+subplot(1,2,2)
+bar(ConstraintPercents)
 colororder("earth")
 leg = legend('Sin','Dx');
-leg.Location = 'southeast';
+leg.Location = 'northeast';
 ylabel('Points activated [\%]')
 xlabel('Patient ID')
+xtickangle(0)
 ylim([0,100])
-title('Constraint coverage')
-f=gcf;
-exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\ClinicalSTNTractsCoverageConstraintPointWise.png','Resolution',300)
+%sgtitle('\textbf{STN subdivisions}')
 
+f=gcf;
+set(gcf, 'Position',  [100, 100, 550, 250])
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\ClinicalSTNSubsCoveragePointWise.png','Resolution',300)
+elseif k==2
+    TargetPercents = TargetPercents*0.01;
+    ConstraintPercents = ConstraintPercents*0.01;
+    figure
+    set(0, 'DefaultAxesFontSize', 12);
+    subplot(1,2,1)
+    colororder("earth")
+    bar(TargetPercents)
+    xtickangle(0)
+    leg = legend('Sin','Dx');
+    leg.Location = 'northeast';
+    ylabel('Fibers activated [\%]')
+    xlabel('Patient ID')
+    title('Target VTA')
+    ylim([0,100])
+
+    subplot(1,2,2)
+    bar(ConstraintPercents)
+    colororder("earth")
+    xtickangle(0)
+    leg = legend('Sin','Dx');
+    leg.Location = 'northeast';
+    ylabel('Fibers activated [\%]')
+    xlabel('Patient ID')
+    ylim([0,100])
+    title('Constraint VTA')
+    %sgtitle('\textbf{STN tracts}')
+    set(gcf, 'Position',  [100, 100, 550, 250])
+    f= gcf;
+    exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\ClinicalSTNTractsCoverageFiberWise.png','Resolution',300)
+end
+
+end
+%% Clinical VTA alphaShapes
+% How much of the VTA volume is spend on target or constraint coverage?
+hands = {'sin','dx'};
+
+s=0;
+row = 1; % 1 - clinical settings, 2-conservative STN subs,3-conservative STN tracts, 4-Ruben STN subs, 5-Ruben STN tracts
+targets = {'STN_motor';'STN_motor_tract'};
+for k=1:length(targets)
+TargetPercents = zeros(length(pat_names),2);
+ConstraintPercents = zeros(length(pat_names),2);
+for j=1:2
+    hand = convertStringsToChars(hands{j});
+    if strcmp(hand,'dx')
+        side_nr =1;
+    else
+        side_nr = 2;
+    end
+    for i=1:length(pat_names)
+        s=s+1;
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+            TargetPercents(i,j)= NaN;
+            ConstraintPercents(i,j) = NaN;
+            continue
+        end
+
+        fileName = append(pat.path,'Suggestions',filesep,targets{k},...
+            filesep,'alphaShapeCoverages',filesep,'alphaShapeCoverages_',pat.space,'_',hand,'.txt');
+        opts = detectImportOptions(fileName); % Initial detection
+        opts.VariableNamesLine = 1; % Set variable names line
+        T = readtable(fileName,opts);
+        T=rmmissing(T,2);
+        T.Properties.VariableNames = ["Contacts","Amplitude","PW","Ethresh","VTAVolume","TargetPercent","ConstraintPercent"];
+        %[~,idx] = max(T.Score);
+        TargetPercents(i,j) = T.TargetPercent(row);
+        ConstraintPercents(i,j) = T.ConstraintPercent(row);
+    end
+end
+TargetPercents = rmmissing(reshape(TargetPercents.',1,[]));
+ConstraintPercents = rmmissing(reshape(ConstraintPercents.',1,[]));
+if k==1
+figure
+set(0, 'DefaultAxesFontSize', 12);
+subplot(2,2,1)
+colororder("earth")
+h=histogram(TargetPercents,6,'FaceAlpha',1);
+ylabel('Count')
+xlabel('Target VTA [\%]')
+xlim([0,36])
+xticks([0,10,20,30])
+ylim([0,7.2])
+set(0, 'DefaultAxesFontSize', 18);
+title('\textbf{STN subdivisions}')
+
+% Fit straight line using Least Squares
+bin_centers = (h.BinEdges(1:end-1) + h.BinEdges(2:end)) / 2;
+bin_heights = h.Values;
+p = polyfit(bin_centers,bin_heights,0);
+hold on
+x_values = linspace(0, 36, 100);
+plot(x_values, p*ones(100,1), 'r-', 'LineWidth', 2);
+
+
+
+%figure
+set(0, 'DefaultAxesFontSize', 12);
+subplot(2,2,3)
+colororder("earth")
+histogram(ConstraintPercents,6,'FaceAlpha',1)
+ylabel('Count')
+xlabel('Constraint VTA [\%]')
+ylim([0,7.2])
+xlim([0,36])
+xticks([0,10,20,30])
+%title('\textbf{STN subdivisions}')
+%pd = fitdist(ConstraintPercents', 'Lognormal');
+%hold on
+%x_values = linspace(min(ConstraintPercents), max(ConstraintPercents), 100);
+%pdf_values = pdf(pd, x_values);
+%plot(x_values, pdf_values * (length(ConstraintPercents) * (max(ConstraintPercents) - min(ConstraintPercents)) / 6), 'r-', 'LineWidth', 2);
+
+elseif k==2
+subplot(2,2,2)
+colororder("earth")
+h=histogram(TargetPercents,6,'FaceAlpha',1);
+%ylabel('Count')
+xlabel('Target VTA [\%]')
+xlim([0,21])
+ylim([0,7.2])
+xticks([0,10,20])
+set(0, 'DefaultAxesFontSize', 18);
+title('\textbf{STN tracts}')
+% fit lognorm distribution
+%pd = fitdist(TargetPercents', 'Lognormal');
+%hold on
+%x_values = linspace(min(TargetPercents), max(TargetPercents), 100);
+%pdf_values = pdf(pd, x_values);
+%plot(x_values, pdf_values * (length(TargetPercents) * (max(TargetPercents) - min(TargetPercents)) / 6), 'r-', 'LineWidth', 2);
+
+% fit splines
+bin_centers = (h.BinEdges(1:end-1) + h.BinEdges(2:end)) / 2;
+bin_heights = h.Values;
+x_values = linspace(min(TargetPercents), max(TargetPercents), 100);
+spline_curve = spline(bin_centers, bin_heights, x_values);
+hold on
+plot(x_values, spline_curve, 'r-', 'LineWidth', 2);
+
+subplot(2,2,4)
+colororder("earth")
+set(0, 'DefaultAxesFontSize', 12);
+histogram(ConstraintPercents,6,'FaceAlpha',1)
+%ylabel('Count')
+xlabel('Constraint VTA [\%]')
+ylim([0,12.2])
+xlim([0,21])
+xticks([0,10,20])
+%title('\textbf{STN tracts}')
+end
+end
+f=gcf;
+exportgraphics(f,'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study\ClinicalVTAAlphaShapeDistributions.png','Resolution',300)
 %% Plotting preferred contact combinations
 hands = {'sin','dx'};
 CT = orderedcolors('gem12');
@@ -237,16 +397,16 @@ for i=1:length(pat_names)
         end
 
         disp(append(pat_names(i,:),' ',hand))
-        pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
         end
 
-        fileName = append(pat_path,'Suggestions',filesep,'STN_motor_tract',...
-            filesep,optischeme,filesep,'100',filesep,'S-1-1-0',...
-            filesep,'Top_Suggestions_',space,'_',...
-            hand,'_',optischeme,'_','.txt');
+        fileName = append(pat.path,'Suggestions',filesep,'STN_motor_tract',...
+            filesep,cohort.optischeme,filesep,'100',filesep,'S-1-1-0',...
+            filesep,'Top_Suggestions_',pat.space,'_',...
+            hand,'_',cohort.optischeme,'_','.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
 
@@ -303,16 +463,16 @@ for i=1:length(pat_names)
         end
 
         disp(append(pat_names(i,:),' ',hand))
-        pat_path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
         end
 
-        fileName = append(pat_path,'Suggestions',filesep,'STN_motor_tract',...
-            filesep,optischeme,filesep,'100',filesep,'S-1-1-0',...
-            filesep,'Top_Suggestions_',space,'_',...
-            hand,'_',optischeme,'_','.txt');
+        fileName = append(pat.path,'Suggestions',filesep,'STN_motor',...
+            filesep,cohort.optischeme,filesep,'100',filesep,'S-1-1-0',...
+            filesep,'Top_Suggestions_',pat.space,'_',...
+            hand,'_',cohort.optischeme,'_','.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
 

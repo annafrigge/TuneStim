@@ -1,17 +1,17 @@
-function segment_wt1_job(pat_path,rebuild, space)
+function segment_wt1_job(pat.path,cohort.rebuild, pat.space)
 %
 % Summary
 % --------
 % SPM generated function that identifies grey matter, white matter and CSF.
 % The segmentation is saved in the NIFTI files c1wt1, c1wt2, c1wt3
 %-----------------------------------------------------------------------
-if strcmp(space,'MNI')
+if strcmp(pat.space,'MNI')
     input_volume = 'glanat.nii';
 else
     input_volume= 'wt1.nii';
 end
 SPM_dir = what('spm12').path;
-matlabbatch{1}.spm.spatial.preproc.channel.vols = {append(pat_path,input_volume,',1')};
+matlabbatch{1}.spm.spatial.preproc.channel.vols = {append(pat.path,input_volume,',1')};
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
 matlabbatch{1}.spm.spatial.preproc.channel.write = [0 0];
@@ -51,12 +51,12 @@ matlabbatch{1}.spm.spatial.preproc.warp.bb = [NaN NaN NaN
                                               NaN NaN NaN];
 
 
-if (~isfile(fullfile(pat_path,'c1wt1.nii'))|| ~isfile(fullfile(pat_path,'c2wt1.nii')) || ~isfile(fullfile(pat_path,'c3wt1.nii')))
-    rebuild = 1;
+if (~isfile(fullfile(pat.path,'c1wt1.nii'))|| ~isfile(fullfile(pat.path,'c2wt1.nii')) || ~isfile(fullfile(pat.path,'c3wt1.nii')))
+    cohort.rebuild = 1;
 end
 
 
-if rebuild == 1 
+if cohort.rebuild == 1 
     disp('performing segmentation...')
     spm('defaults', 'fmri')
     spm_jobman('initcfg')

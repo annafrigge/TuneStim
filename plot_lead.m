@@ -1,10 +1,10 @@
-function plot_lead(pat_path,bestSolution,hand,space)
+function plot_lead(pat.path,bestSolution,hand,pat.space)
 %plot_lead(head,tail,VTAfig,lead,orientation)
 %plot cylinder
 
-    model = mphload(append(pat_path,'DBS_simulation.mph'));
-    model.param.loadFile(append(pat_path,'lead_parameters_',...
-        space,'_',hand,'.txt'));
+    model = mphload(append(pat.path,'DBS_simulation.mph'));
+    model.param.loadFile(append(pat.path,'lead_parameters_',...
+        pat.space,'_',hand,'.txt'));
     if isstring(bestSolution{5})
         model.param.set('I0', str2double(bestSolution{5})*1e-3); 
     else

@@ -1,4 +1,4 @@
-function [head,tail] = lead_parameters(pat_path,space,lead_orientation,hand,lead)
+function [head,tail] = get_lead_parameters(pat,hands)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ABSTRACT                                                                %
@@ -14,16 +14,16 @@ function [head,tail] = lead_parameters(pat_path,space,lead_orientation,hand,lead
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-if strcmp(lead,'S:t Jude 1331')
+if strcmp(pat.lead,'S:t Jude 1331')
     % surface area of contacts S:t Jude short
     A_shell_tot = 5.9768E-6;
     A_shell_seg = 1.2453E-6;
-    lead_orientation = lead_orientation + 175;
-elseif strcmp(lead,'Boston Scientific 2202')
+    pat.orientation = pat.orientation + 175;
+elseif strcmp(pat.lead,'Boston Scientific 2202')
     %surface ara of contacts Boston Scientific
     A_shell_tot = 6.0E-6;
     A_shell_seg = 1.5E-6;
-elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
     A_shell_tot = 6.0E-6;
     A_shell_seg = 0;
 end
@@ -33,17 +33,17 @@ head_i = [0 0 0];
 tail_i = [0 0 6e-3];
 
 % loading reconstructed marker coordinates - desired coordinates
-for i=1:length(hand)
-    if strcmp(hand{i},'dx')
+for i=1:length(hands)
+    if strcmp(hands{i},'dx')
         side_nr = 1;
     else
         side_nr = 2;
 
     end
-    if isnan(lead_orientation(i))
+    if isnan(pat.orientation(i))
          continue
     end
-    [h,t] = get_lead_coordinates(pat_path,space,side_nr);
+    [h,t] = get_lead_coordinates(pat,side_nr);
     disp('head-tail (dx, sin) distance is:')
     disp(append(num2str(norm(h-t)),' m'))
     
@@ -62,12 +62,12 @@ for i=1:length(hand)
     I0 = 1e-3;      % unit stimulus 1mA
     
     % write parameters to .txt file
-    write_lead_parameters_to_txt(pat_path,space, A_shell_tot,A_shell_seg,...
-                             h,lead_orientation(i), t, axis,...
-                             alpha,V0,I0,hand{i});
+    write_lead_parameters_to_txt(pat, A_shell_tot,A_shell_seg,...
+                             h,pat.orientation(i), t, axis,...
+                             alpha,V0,I0,hands{i});
 
-    head.(hand{i}) = h;
-    tail.(hand{i}) = t;
+    head.(hands{i}) = h;
+    tail.(hands{i}) = t;
 
 end
 

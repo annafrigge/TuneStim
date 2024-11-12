@@ -16,8 +16,8 @@ centro = polygonCentroid3d(Vol_target(:,1:3));
 lead_vector = (tail-head)/norm(tail-head);
 
 % mid contact coordinates, when lowest contact row is placed at head
-% coordinates. Due to nonlinear warp from native to MNI space, contact
-% positions in MNI space to not necessarily match
+% coordinates. Due to nonlinear warp from native to MNI pat.space, contact
+% positions in MNI pat.space to not necessarily match
 mid_contact_coord = [head; head+1.5e-3*lead_vector; head+3e-3*lead_vector; head+4.5e-3*lead_vector;];
 % scatter3(head(1),head(2),head(3),20,'filled','MarkerFaceColor','r')
 % hold on

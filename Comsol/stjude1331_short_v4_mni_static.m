@@ -1,5 +1,5 @@
-function out = stjude1331_short_v4_mni_static(pat,pat_path,hand,...
-               space, activeContacts1, activeContacts2, I0, output_path)
+function out = stjude1331_short_v4_mni_static(pat.name,pat.path,hand,...
+               pat.space, activeContacts1, activeContacts2, I0, pat.outputPath)
 %
 % stjude1331_short_v4_native_dynamic.m
 %
@@ -53,7 +53,7 @@ model.param.set('I0', '1e-3');
 model.func.create('int1', 'Interpolation');
 model.func('int1').label('Conductivity map');
 model.func('int1').set('source', 'file');
-model.func('int1').set('filename', append('C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\','conductivity_map_',hand,'_',space,'.csv'));
+model.func('int1').set('filename', append('C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\','conductivity_map_',hand,'_',pat.space,'.csv'));
 model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
 model.func('int1').set('interp', 'neighbor');
 model.func('int1').set('extrap', 'value');
@@ -65,7 +65,7 @@ model.func('int1').set('fununit', 'S/m');
 % model.func.create('int2', 'Interpolation');
 % model.func('int2').label('Permittivity map');
 % model.func('int2').set('source', 'file');
-% model.func('int2').set('filename', append(pat_path,'permittivity_map_',hand,'_',space,'.csv'));
+% model.func('int2').set('filename', append(pat.path,'permittivity_map_',hand,'_',pat.space,'.csv'));
 % model.func('int2').setIndex('funcs', 'epsilon_brain', 0, 0);
 % model.func('int2').set('interp', 'neighbor');
 % model.func('int2').set('extrap', 'value');
@@ -276,13 +276,13 @@ model.result.export('data1').set('gridy3', 'range(-0.008+head_y,0.016/89,0.008+h
 model.result.export('data1').set('gridz3', 'range(-0.019+head_z,0.04/89,0.021+head_z)');
 
 model.result.export('data1').set('header', false);
-model.result.export('data1').set('filename', append(output_path,filesep,'V_EF_unipolar_',...
+model.result.export('data1').set('filename', append(pat.outputPath,filesep,'V_EF_unipolar_',...
                                  activeContacts1_string,'_',num2str(I0*1e3),'mA.csv'));
 
 
 % Switch to patient-specific paramters
-model.param.loadFile(append(pat_path,'lead_parameters_',...
-                     space,'_',hand,'.txt'));
+model.param.loadFile(append(pat.path,'lead_parameters_',...
+                     pat.space,'_',hand,'.txt'));
 model.param.set('I0', num2str(I0));            
                  
 model.component('comp1').geom('geom1').run('fin');
@@ -306,7 +306,7 @@ if ~strcmp(activeContacts2,'none')
     model.component('comp1').physics('ec').feature('term2').active(true);
     model.component('comp1').physics('ec').feature('term2').selection.named('geom1_csel2_bnd');
     
-    model.result.export('data1').set('filename', append(output_path,'V_EF_bipolar_',...
+    model.result.export('data1').set('filename', append(pat.outputPath,'V_EF_bipolar_',...
                                  activeContacts1_string,'_', activeContacts2_string, '_',num2str(I0*1e3),'mA.csv'));
 end
 

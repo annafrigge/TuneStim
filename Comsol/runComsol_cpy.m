@@ -1,4 +1,4 @@
-function out = runComsol(pat_path,hand,space,nProc,lead)
+function out = runComsol(pat.path,hand,pat.space,nProc,lead)
 
 % This function runs Comsol-simulations for 1mA stimulation for 19
 % different contact configurations, and saves the electric data in
@@ -8,12 +8,12 @@ function out = runComsol(pat_path,hand,space,nProc,lead)
 
 % Input Arguments
 % ---------------
-% pat_path          : (str) pathto the patient folder where the
+% pat.path          : (str) pathto the patient folder where the
 %                     patient-specific data (conductivity map, lead localisation) 
 %                     can be found
 % hand              : (str) dx or sin corresponding to right or left
 %                     hemisphere
-% space             : (str) in which coordinate system the simulation is running,
+% pat.space             : (str) in which coordinate system the simulation is running,
 %                      native or MNI 
 % nProc             : (int) number of parallel processes
 %
@@ -72,7 +72,7 @@ model.study('std1').feature('stat').activate('ec', true);
 % importing anchor parameters from file
 %model.param.loadFile(append('C:\Users\annfr888\Documents\DBS\code\',...
 %                           'Comsol code\models\anchor_lead_parameters_v4.txt'));
-%model.param.loadFile(append(pat_path,'\',pat,'_lead_parameters_',hand,...
+%model.param.loadFile(append(pat.path,'\',pat.name,'_lead_parameters_',hand,...
 %                     '.txt'));
 
 %%
@@ -312,10 +312,10 @@ model.component('comp1').physics('ec').feature('cucn1').set('sigma', [0.1 0 0 0 
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
 
-if strcmp(space,'native')
-    model.func('int1').set('filename', append(pat_path,'conductivity_map_',hand,'.csv'));
+if strcmp(pat.space,'native')
+    model.func('int1').set('filename', append(pat.path,'conductivity_map_',hand,'.csv'));
 else
-    model.func('int1').set('filename', append(pat_path,'MNI/','conductivity_map_',hand,'_MNI.csv'));
+    model.func('int1').set('filename', append(pat.path,'MNI/','conductivity_map_',hand,'_MNI.csv'));
 end
 
 %model.func('int1').set('filename', 'C:\Users\annfr888\Documents\DBS\results\pre_op.csv');
@@ -571,7 +571,7 @@ model.sol('sol1').runAll;
 
 
 % switch to the actual patient of choice
-lead_path = append(pat_path,'lead_parameters_',space,...
+lead_path = append(pat.path,'lead_parameters_',pat.space,...
                             '_',hand,'.txt');
 model.param.loadFile(lead_path);
 model.component('comp1').geom('geom1').run('fin');
@@ -612,12 +612,12 @@ model.sol('sol1').runAll;
 
 
 % determining coupling constants by keeping inactive contacts floating 
-mkdir(append(pat_path,'C_EF_',hand,'_',space));
+mkdir(append(pat.path,'C_EF_',hand,'_',pat.space));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
-name = append(pat_path,'stjude_short_native.mph');
+name = append(pat.path,'stjude_short_native.mph');
 mphsave(model,name)
 toc
 
@@ -632,7 +632,7 @@ parfor(i=1:length(coupl_combos),nProc)
         
     end
     try 
-        solve_for_combos(i,name,pat_path,hand,coupl_combos)
+        solve_for_combos(i,name,pat.path,hand,coupl_combos)
     catch ME
         disp(comsolPort)
         disp(ME)
@@ -645,11 +645,11 @@ disp('comsol done')
 end
 
 
-function solve_for_combos(i,name,pat_path,hand,coupl_combos)
+function solve_for_combos(i,name,pat.path,hand,coupl_combos)
 
 % This function runs the simulation for 19 differenct contact
 % configurations corresponding to the items in coupl_combos and saves the
-% result in the folder C_EF_{hand}_{space}
+% result in the folder C_EF_{hand}_{pat.space}
     
     model = mphload(name);
     % deactivating current density on all contacts
@@ -764,8 +764,8 @@ function solve_for_combos(i,name,pat_path,hand,coupl_combos)
 
 
     % export coupling constants
-    model.result.export('data1').set('filename', append(pat_path,...
-                                 'EFdistribution_',hand,'_',space,'/EF_cont_',coupl_combos(i,:),'_', ...
+    model.result.export('data1').set('filename', append(pat.path,...
+                                 'EFdistribution_',hand,'_',pat.space,'/EF_cont_',coupl_combos(i,:),'_', ...
                                  hand,'_1mA_gnd.csv'));
     model.result.export('data1').run;
     disp(i)

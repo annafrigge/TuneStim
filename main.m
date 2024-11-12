@@ -1,13 +1,13 @@
-function msg = main(pat_path,hand,lead,lead_orientation,atlas,target_names,constraint_names,optischeme,EThreshold,relaxation,Nthreads,space,plotoption,scoretype,rebuild)
+function msg = main3(cohort)
 
 % main function that finds the optimal stimulation given the pre-processed
-% neuroimages in pat_path. The stimulation target and constraint are
+% neuroimages in pat.path. The stimulation target and constraint are
 % defined by the file names in 'targets' and 'constraints' which can be
 % found in the 'atlas' lead-DBS directory.
 
 % Input Arguments
 % ---------------
-% pat_path      :   (str) path to the patient directory.
+% path      :   (str) path to the patient directory.
 %                   Required.
 % hand          :   (cell) brain hemispheres of interest. {'dx'},{'sin'} or {'both'}.
 %                   Required.
@@ -16,11 +16,11 @@ function msg = main(pat_path,hand,lead,lead_orientation,atlas,target_names,const
 %
 % atlas         :   (str) atlas name (must be identical to leadDBS)
 %                   Optional. Default = DISTAL Minimal (Ewert 2017)
-% target_names       :   (cell of str) target names.
+% targets       :   (cell of str) target names.
 %                   Optional. Default = {STN motor}
-% optischeme    :   Optimization scheme, either "Conservative" or "Minimum
-%                   coverage"
-% constraint_names   :   (cell of str) constraint names.
+% optischeme    :   Optimization scheme, either "Linear" or
+%                           "Nonlinear"
+% constraints   :   (cell of str) constraint names.
 %                   Optional. Default = {STN limbic, STN associative}
 % EThreshold    : (int)
 %
@@ -29,9 +29,9 @@ function msg = main(pat_path,hand,lead,lead_orientation,atlas,target_names,const
 %                   Optimization 2: percentage of target points that need
 %                   to be activated
 
-% Nthreads      :   (int)  number of parallel processes
+% threads      :   (int)  number of parallel processes
 %                   Optional. Default = None
-% space         :   (str) which space to use for simulation. native or mni.
+% space         :   (str) which pat.space to use for simulation. native or mni.
 %
 % rebuild       : (bool) indicates whether certain steps in the pipeline
 %                 should be recomputed (segmentation, conducivitymap,
@@ -43,10 +43,12 @@ function msg = main(pat_path,hand,lead,lead_orientation,atlas,target_names,const
 %  for each lead side defined in hand
 %
 % ToDo:
-% 2. Include fiber activation?
-% 3. Incorporate default values
+% 1. Include all other leads
+% 2. Boston Scientific Vercise Cartesia -- Terminal!
+% 3. Lead DBS version 3.1 support
+% 4. Include tests and error messages!
+% 5. Include option for current and voltage stimulation!!!
 
-optimize = 1;
 tic
 settings;
 warning('off','MATLAB:dispatcher:nameConflict')
@@ -55,26 +57,27 @@ warning('off','MATLAB:dispatcher:nameConflict')
 %% parameters
 unit = '1mA'; % type of unit stimulus in FEM simulations
 
-default_lead = 'S:t Jude 1331';
-default_atlas = 'Distal Minimal (Ewert 2017)';
-default_target = {'STN motor'};
-default_constraint = {'STN associative','STN limbic'};
-default_threshold = 200;
-default_margin = 50;
-default_threads = 0;
-default_space = 'native';
-
-
-% define threshold and safetyMargin
-EFobj_target = EThreshold;      % threshold 200
-EFobj_constraint = 150; %0.5*EThreshold;  % safety margin for constraint areas
+cohort.omega = str2num(replace(cohort.omega,'-',' '));
+if strcmp(cohort.optischeme,'Linear')| strcmp(cohort.optischeme,'Nonlinear')
+    relaxation = 0:10:90;
+elseif strcmp(cohort.optischeme,'mincov')
+    relaxation = 10:10:90;
+end
+counter = 1;
+for patient=1:length(cohort.patNames)
+    disp(append('Patient ',cohort.patNames{patient,:},' loading ...'))
+    pat.path = char(append(cohort.folder,filesep,cohort.patNames{patient,:},filesep));
+    pat.orientation = [cohort.leadOrientations{patient,1}, cohort.leadOrientations{patient,2}];    
+    hands = {"sin","dx"};
+    
+    pat.lead = cohort.leads{patient,1};
+    pat.space = cohort.space;
 
 
 %define patient directory and root directory
-str_array= strsplit(pat_path,filesep);
-patient_name = str_array{end};
-root = string(join(str_array(:,1:end-1),filesep));
-%pat_path = append(pat_path,filesep);
+strArray= strsplit(pat.path,filesep);
+pat.name = strArray{end-1};
+root = string(join(strArray(:,1:end-1),filesep));
 
 if exist('lead','dir')==0
     addpath(genpath('/castor/project/proj_nobackup/MATLAB/lead'));
@@ -84,95 +87,99 @@ if exist('lead','dir')==0
 end
 
 %try
-if Nthreads > 1
+if cohort.threads > 1
     try
-        %maxNumCompThreads(Nthreads)
-        parpool(Nthreads);
+        %maxNumCompThreads(cohort.threads)
+        parpool(cohort.threads);
     catch ME
         disp(ME)
     end
 else
-    Nthreads = 0;
+    cohort.threads = 0;
 end
 
 %% Outout directories
-mkdir([pat_path,'Suggestions'])
-output_path = [pat_path,'Suggestions',filesep,extractBefore(target_names{1,1},'.'),filesep,optischeme,filesep,scoretype];
-mkdir(output_path)
+
+mkdir([pat.path,'Suggestions'])
+pat.outputPath = [pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,cohort.optischeme,filesep,num2str(cohort.CThreshold),filesep,'S-',num2str(cohort.omega(1)),'-',num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
+
+mkdir(pat.outputPath)
 
 
 %% reconstructed lead parameters
-[heads,tails]=lead_parameters(pat_path,space,lead_orientation,hand,lead);
+[heads,tails]=get_lead_parameters(pat,hands);
 
 
 %% conductivity maps
 %% map from 7T MNI space to anchor modality
 %use the mapped file wt1.nii/wt2.nii to construct conductivity maps
 
-if strcmp(space,'native')
+if strcmp(pat.space,'native')
     %warp from high resolution images to n
-    MNI7T_to_native(pat_path(1:end-1),rebuild);
+    MNI7T_to_native(pat.path(1:end-1),cohort.rebuild);
 
     %segment the warped image with SPM
-    segment_wt1_job(pat_path,rebuild,space)
+    segment_wt1_job(pat.path,cohort.rebuild,pat.space)
 
     %construct conductivity map for dx and sin (right -and left hemisphere)
-    for i = 1:length(hand)
-        assign_conductivites(pat_path,hand{i},space)
+    for i = 1:length(hands)
+        assign_conductivites(pat)
     end
 
-    disp('Conductivity map in native space computed.')
+    disp('Conductivity map in native pat.space computed.')
 end
 
 
 
-%% get target in native space and load region of interest
-targets_and_constraints = [target_names,constraint_names];
+%% get target in native pat.space and load region of interest
+targets_and_constraints = [cohort.targets,cohort.constraints];
 
 %initiate a .mat file in  which target/constraint structure data are to
 %be stored
-create_structure_file(pat_path,atlas)
+create_structure_file(pat,cohort)
 
-if strcmp(space,'native')
-    % warp structures of interest to native space
-    warp_regions(patient_name,root,atlas,targets_and_constraints);
+if strcmp(pat.space,'native')
+    % warp structures of interest to native pat.space
+    warp_regions(pat.name,root,cohort.atlas,targets_and_constraints);
 end
 
 
-for i = 1:length(hand)
-    head = heads.(hand{i});
-    tail = tails.(hand{i});
-    orientation = lead_orientation(i);
+for i = 1:2
+    if isnan(pat.orientation(i))
+        continue
+    end
+    pat.hand = hands{i};
+    head = heads.(hands{i});
+    tail = tails.(hands{i});
 
-    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'w');
-    fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
-    fclose(fid);
+
 
     %% build comsol model
     % simulate the electric field for unit stimulus in case that has
-    % not been done previously or if the user requests a rebuild.
+    % not been done previously or if the user requests a cohort.rebuild.
 
-    FEM_sol_dir = append(pat_path,'EFdistribution_',hand{i},'_1mA');
+    FEM_sol_dir = append(pat.path,'EFdistribution_',pat.hand,'_1mA');
 
-    if ~exist(FEM_sol_dir,'dir') || rebuild == 1
-        runComsol(pat_path,hand{i},space,Nthreads,lead);
+    if ~exist(FEM_sol_dir,'dir') || cohort.rebuild == 1
+        run_comsol_terminal(pat,cohort.threads);
     end
 
+    
     %% load cleaned volume electric data
-    InitialSolution = load_comsol_solution(pat_path,hand{i},unit,lead,Nthreads);
-    contact_names = fieldnames(InitialSolution);
+    InitialSolution = load_comsol_solution(pat,unit,cohort.threads);
+    contactNames = fieldnames(InitialSolution);
 
     % Get maximum coordinate point in ROI
-    max_point = max(InitialSolution.(contact_names{1})(:,1:3));
-    min_point = min(InitialSolution.(contact_names{1})(:,1:3));
+    maxPoint = max(InitialSolution.(contactNames{1})(:,1:3));
+    minPoint = min(InitialSolution.(contactNames{1})(:,1:3));
 
 
     %% load target and constraint and  consider only target points within max and min range
-    [target,constraint, target_lst,constraint_lst] = load_atlas_roi_2(hand{i},space,pat_path,atlas,target_names,constraint_names,max_point,min_point,head);
+    [target,constraint, target_lst,constraint_lst] = load_atlas_roi(pat,cohort,maxPoint,minPoint,head);
 
 
     %% Remove points of target/constraint volumes that lie within the lead volume
-    Vol_target = remove_lead_volume2( target,head,tail );
+    Vol_target = remove_lead_volume2(target,head,tail);
     Vol_constraint = remove_lead_volume2(constraint,head,tail);
 
     try
@@ -186,15 +193,19 @@ for i = 1:length(hand)
     catch
         disp('warning! Number of constraint points fewer than 100')
     end
-
-    disp(['Computing closes distance to target centroid for Patient ', pat_path(end-3:end-1), ' ', convertStringsToChars(hand{i})])
+    
+    if cohort.optimize == 1
+    disp(['Computing closes distance to target centroid for Patient ', pat.path(end-3:end-1), ' ', convertStringsToChars(pat.hand)])
     distance_contacts_to_target(Vol_target,head,tail)
 
-    if optimize == 1
+
+    fid = fopen(append(pat.outputPath,filesep,'Top_Suggestions_',pat.space,'_',convertStringsToChars(pat.hand),'_',cohort.optischeme,'_','.txt'),'w');
+    fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
+    fclose(fid);
+
     %% approximate target points E-field
     InitialSolution_cell = struct2cell(InitialSolution);
-    solution_coords = InitialSolution.(contact_names{1})(:,1:3);
-
+    solution_coords = InitialSolution.(contactNames{1})(:,1:3);
 
     fprintf('Interpolating comsol model E-field for %d points...',length(Vol_target)+length(Vol_constraint))
 
@@ -203,126 +214,148 @@ for i = 1:length(hand)
     method = 'MFS';
     EF_nearest=cell(length(Vol_target),1);
 
-    parfor(j = 1:length(Vol_target),Nthreads)
-        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_target(j,:));
-        [~,~,EFnorm_target(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_target(j,:),0,1e8,method);
+    parfor(j = 1:length(Vol_target),cohort.threads)
+        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_target(j,1:3));
+        [~,~,EFnorm_target(j)] = EV_point(EF_nearest{j} ,contactNames,Vol_target(j,1:3),0,1e8,method);
     end
 
     % test that the interpolation error is not above 10%
-    test_interpolation(EF_nearest,test_point,contact_names,method)
+    test_interpolation(EF_nearest,test_point,contactNames,method)
     clear test_point EF_nearest
 
-    parfor(j = 1:length(Vol_constraint),Nthreads)
-        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_constraint(j,:));
-        [~,~,EFnorm_constraint(j)] = EV_point(EF_nearest{j} ,contact_names,Vol_constraint(j,:),0,1e8,method);
+    parfor(j = 1:length(Vol_constraint),cohort.threads)
+        [EF_nearest{j},test_point{j}] = nearest_EF(InitialSolution_cell,solution_coords,Vol_constraint(j,1:3));
+        [~,~,EFnorm_constraint(j)] = EV_point(EF_nearest{j} ,contactNames,Vol_constraint(j,1:3),0,1e8,method);
     end
 
     % test that the interpolation error is not above 10%
-    test_interpolation(EF_nearest,test_point,contact_names,method)
+    test_interpolation(EF_nearest,test_point,contactNames,method)
     clear test_point EF_nearest
 
     % save constraint and target EF in cell array - one cell for each contact
-    EnormConstraint = cell(length(contact_names),1);
-    for k = 1:length(contact_names)
+    EnormConstraint = cell(length(contactNames),1);
+    for k = 1:length(contactNames)
         for p = 1:length(Vol_constraint)
-            EnormConstraint{k}(p) = EFnorm_constraint(p).(contact_names{k});
+            EnormConstraint{k}(p) = EFnorm_constraint(p).(contactNames{k});
         end
     end
 
-    EnormTarget = cell(length(contact_names),1);
-    for k = 1:length(contact_names)
+    EnormTarget = cell(length(contactNames),1);
+    for k = 1:length(contactNames)
         for p = 1:length(Vol_target)
-            EnormTarget{k}(p) = EFnorm_target(p).(contact_names{k});
+            EnormTarget{k}(p) = EFnorm_target(p).(contactNames{k});
         end
     end
 
+    % Carry coordinates for fiber targeting optimization scheme
+    EnormConstraint{1,2} = Vol_constraint;
+    EnormTarget{1,2} = Vol_target;
     %% Optimization
     
     for k = 1:length(relaxation)
         rel = relaxation(k);
-        cou = eye(length(contact_names));
-        [alpha, J] = run_optimization(optischeme,EFobj_target,EnormTarget,...
-        EFobj_constraint,EnormConstraint,rel,cou);
+        cou = eye(length(contactNames));
+        [alpha, J] = run_optimization(cohort,EnormTarget,...
+                                        EnormConstraint,rel,cou);
+
+        %% Compute VTA
+        disp('Computing volume of tissue activated...')
+
+        %compute target activation and spill
+        disp("Computing target activation")
+        [pAct_target,pSpill_target,VTA] = ...
+            computing_volumes(head,tail,InitialSolution_cell,alpha,target_lst,cohort);
 
 
-    %% Compute VTA
-    disp('Computing volume of tissue activated...')
+        %compute constraint activation and spill
+        disp('Computing constraint activation')
+        [pAct_constraint,pSpill_constraint,VTA] = ...
+            computing_volumes(head,tail,InitialSolution_cell,alpha,constraint_lst,cohort);
 
-    %compute target activation and spill
-    disp("Computing target activation")
-    [pAct_target,pSpill_target,VTA] = ...
-        computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,target_lst,EFobj_target,Nthreads);
+     
 
 
-    %compute constraint activation and spill
-    disp('Computing constraint activation')
-    [pAct_constraint,pSpill_constraint,VTA] = ...
-        computing_volumes(contact_names,head,tail,InitialSolution_cell,alpha,cou,constraint_lst, EFobj_target,Nthreads);
-
-    % Compute Activation of target and constraints point-wise
-    
-
-    %% write array of recommendations
-    %scoretype = 'score1';
-    wt= 2;
-    wc = 1;
-    ws = 1;
-    if strcmp(scoretype, 'score1')
-        scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100; % scores need to be normalized for meaningful comparison across a dataset of patients?
-    elseif strcmp(scoretype, 'score2')
+        %% write array of recommendations
+        wt= cohort.omega(1);% scores need to be normalized for meaningful comparison across a dataset of patients?
+        wc = cohort.omega(2);
+        ws = cohort.omega(3);
         scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100;
-    elseif (strcmp(scoretype,'score3'))
-        scores =(wt*pAct_target*100-wc*pAct_constraint*100);%./alpha';
+        %scores = (relaxation/100-pSpill_target*100)^2;
+
+        [desc_order,idx] = sort(scores, 'descend');
+        best_idx = idx(1);
+
+
+        % write results to .txt
+        fid=fopen(append(pat.outputPath,filesep,'Suggestions_',pat.space,'_',pat.hand,'_',cohort.optischeme,'_',num2str(rel),'.txt'),'w+');
+        fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
+
+        a = cell(length(idx),7);
+        for j = 1:length(idx)
+            in = idx(j);
+            a{j,1} = erase(contactNames{in},'.csv');
+            a{j,2} = [9 num2str( round(pAct_target(in)*100,2))];
+            a{j,3} = num2str( round(pAct_constraint(in)*100,2));
+            a{j,4} = num2str( round(pSpill_target(in)*100,2));
+            a{j,5} = num2str( round(alpha(in),2) );
+            a{j,6} = num2str( round(VTA(in),2) );
+            a{j,7} = num2str( round(scores(in),2));
+
+            fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6},a{j,7});
+        end
+
+        fclose(fid);
+
+        %% Top suggestions for all relaxations
+        fid = fopen(append(pat.outputPath,filesep,'Top_Suggestions_',pat.space,'_',convertStringsToChars(pat.hand),'_',cohort.optischeme,'_','.txt'),'a');
+        fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
+        fclose(fid);
+        [bestScore, bestIdx] =  max(str2double({a{:,7}}));
+        if ~exist('bestSolution','var')
+            bestSolution = a(bestIdx,:);
+        elseif bestScore > str2double(bestSolution{1,7})
+            bestSolution = a(bestIdx,:);
+        end
+
+        % print out best option
+        bestAlpha = bestSolution{5};%num2str( round(alpha(best_idx),2) );
+        bestTarget = bestSolution{2};%num2str( round(pAct_target(best_idx)*100,2));
+        bestConstraint = bestSolution{3};%num2str( round(pAct_constraint(best_idx)*100,2));
+        bestSpill = bestSolution{4};%num2str( round(pSpill_target(best_idx)*100,2));
+        bestConfig = bestSolution{1};%erase(contactNames{best_idx},'.csv');
+        bestVTA  = bestSolution{6};%num2str( round(VTA(best_idx),2) );
+        bestScore = bestSolution{7};
+
+
+
+
     end
-    [desc_order,idx] = sort(scores, 'descend');
-    best_idx = idx(1);
-
-
-    %write results to .txt
-    %save(append(pat_path,'Suggestions',filesep,scoretype,filesep,'J_',space,'_',hand{i},optischeme,'_',num2str(rel),'.mat'),'J')
-    fid=fopen(append(output_path,filesep,'Suggestions_',space,'_',hand{i},'_',optischeme,'_',num2str(rel),'.txt'),'a');
-    fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
+    bestOption{counter} = sprintf(' Patient %s %s \n Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Amplitude :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n Score : %s \n',char(cohort.patNames(patient,:)),pat.hand,bestConfig,'%',bestTarget,bestAlpha,'%',bestSpill,'%',bestConstraint,bestVTA,char(179),bestScore);
+    counter = counter +1;
+    end
     
-    a = cell(length(idx),7);
-    for j = 1:length(idx)
-        in = idx(j);
-        a{j,1} = erase(contact_names{in},'.csv');
-        a{j,2} = [9 num2str( round(pAct_target(in)*100,2))];
-        a{j,3} = num2str( round(pAct_constraint(in)*100,2));
-        a{j,4} = num2str( round(pSpill_target(in)*100,2));
-        a{j,5} = num2str( round(alpha(in),2) );
-        a{j,6} = num2str( round(VTA(in),2) );
-        a{j,7} = num2str( round(scores(in),2));
-
-        fprintf(fid,' %s \t %s \t\t\t %s \t\t\t %s \t\t %s \t %s \t\t\t %s \n', a{j,1},a{j,2},a{j,3},a{j,4},a{j,5},a{j,6},a{j,7});
-    end
-
-    fclose(fid);
-
-    %% Top suggestions for all relaxations
-    fid = fopen(append(output_path,filesep,'Top_Suggestions_',space,'_',convertStringsToChars(hand{i}),'_',optischeme,'_','.txt'),'a');
-    fprintf(fid,' %s \t %s \t %s \t %s\t %s \t %s \t %s \n',a{1,1},a{1,2},a{1,3},a{1,4},a{1,5},a{1,6},a{1,7});
-    fclose(fid);
-
-
-
-    % print out best option
-    best_alpha = num2str( round(alpha(best_idx),2) );
-    best_target = num2str( round(pAct_target(best_idx)*100,2));
-    best_constraint = num2str( round(pAct_constraint(best_idx)*100,2));
-    best_spill = num2str( round(pSpill_target(best_idx)*100,2));
-    best_config = erase(contact_names{best_idx},'.csv');
-    best_VTA  = num2str( round(VTA(best_idx),2) );
-    best_option{i} = sprintf(' %s Best Suggestion: \n --------------------- \n Contacts: %s \n Target activation %s : %s \n Alpha :%s \n Spill %s: %s \n Constraint activation %s : %s \n VTA : %s mm%s \n',hand{i},best_config,'%',best_target,best_alpha,'%',best_spill,'%',best_constraint,best_VTA,char(179));
-
-    if plotoption
+     
+     if cohort.plotoption
         disp('Plotting...')
         % visualisation
-        [fig,VTAfig,lgd] = visualize();
-        plot_target_and_constraint(pat_path,atlas,targets_and_constraints,hand{i},space,VTAfig)
-        plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
-        plot_lead(head,tail,VTAfig,lead,orientation)
-
+        %[fig,VTAfig,lgd] = visualize();
+        %plot_target_and_constraint(pat.path,atlas,targets_and_constraints,hand{i},pat.space,VTAfig)
+        %plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
+        % plot_lead(head,tail,VTAfig,lead,orientation)
+        if exist("bestSolution")
+            plot_lead(pat.path,bestSolution,pat.hand,pat.space)
+        elseif cohort.compareSettings
+            I0 = cohort.clinicalSettings{1,i}.(cohort.patNames{patient,:}){1,2};
+            Contacts = strrep(cohort.clinicalSettings{1,i}.(cohort.patNames{patient,:}){1,1},',','_');
+            pw = cohort.clinicalSettings{1,i}.(cohort.patNames{patient,:}){1,3};
+            bestSolution = {Contacts,'','','',I0};
+            plot_lead(pat.path,bestSolution,pat.hand,pat.space)
+            clear I0 Contacts pw
+        end
+        VTAfig = gca;
+        hold on
+        plot_target_and_constraint(pat.path,cohort.atlas,targets_and_constraints,pat.hand,pat.space,VTAfig)
+        %plot_VTA(InitialSolution,alpha,EFobj_target,best_idx,VTAfig)
         %adjust figure properties
         fac=1;
         ax=VTAfig;
@@ -332,31 +365,25 @@ for i = 1:length(hand)
 
         ax.YLim(1)=ax.YLim(1)-fac*norm(ax.YLim(1)-ax.YLim(2));
         ax.YLim(2)=ax.YLim(2)+fac*norm(ax.YLim(1)-ax.YLim(2));
-        lgt=light(ax);
-        lgt.Position=[-50,-50,50];
         axis(ax,'equal')
-        %try closing and opening suggestion file
-
-        %system(['killall TextEdit ']);
-        %system(['open -a TextEdit ' fullfile( pat_path,append(hand{i},'_suggestion.txt') ) ]);
+        light("Position",[-1 0 0],"Style","infinite")
 
 
         fig1=figure('visible','off');
         set(gcf, 'color',[0.1 0.1 0.1])
         copyobj([VTAfig,VTAfig.Legend],fig1);
-        savefig(append(pat_path,hand{i},'_stimulation.fig'))
-    else
-        disp('Not plotting...')
-    end
-
-
-
-
-    end
-    end
+        savefig(append(pat.path,pat.hand,'_stimulation.fig'))
+     else
+         disp('Not plotting...')
+     end
+     if cohort.compareSettings %&& strcmp(char(cohort.patNames(pat.name,:)),cohort.selectedPatient)
+         out = compare_suggested_2_clinical_settingsClinical(pat,pat.hand,head,tail,cohort,Vol_target,Vol_constraint);
+     end
+     msg = 'Done comparing settings.';
 end
-if optimize==1
-msg = best_option{:};
+if cohort.optimize==1
+msg = bestOption{:};
+end
 
 
 gcp('nocreate');
@@ -378,34 +405,8 @@ if ~isempty(gcp('nocreate'))
 end
 
 toc
-end
-
-
-function plot_VTA(EFstruct,alpha,isolevel,best_idx,VTAfig)
-contactnames = fieldnames(EFstruct);
-for i=1:length(contactnames)
-
-    EFinitial=EFstruct.(contactnames{i});
-    EF(:,1:3) = EFinitial(:,1:3);
-    EF(:,5:7) = alpha(i)*EFinitial(:,5:7);
-    EF(:,8) = sqrt(sum(EF(:,5:7).^2,2));
-
-    is_activated = (EF(:,8)>isolevel & ~isnan(EF(:,8)));
-    EF_activated = EF(is_activated,1:3);
-
-
-    shp=alphaShape(EF_activated (:,1),EF_activated(:,2),EF_activated(:,3));
-
-    if i == best_idx
-
-        plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Parent',VTAfig)
-        hold(VTAfig,'on')
-    else
-
-        plot(shp,'FaceAlpha',0.7,'EdgeColor','none','FaceColor','yellow','DisplayName',contactnames{i},'Visible','off','Parent',VTAfig)
-        hold(VTAfig,'on')
-    end
-end
 
 end
+
+
 end

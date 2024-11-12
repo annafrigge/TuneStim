@@ -68,7 +68,7 @@ if p ~= c
   error 'testpts and xyz must have the same number of columns'
 end
 if p < 2
-  error 'Points must lie in at least a 2-d space.'
+  error 'Points must lie in at least a 2-d pat.space.'
 end
 
 % was the convex hull supplied?
@@ -77,7 +77,7 @@ if (nargin<3) || isempty(tess)
 end
 [nt,c] = size(tess);
 if c ~= p
-  error 'tess array is incompatible with a dimension p space'
+  error 'tess array is incompatible with a dimension p pat.space'
 end
 
 % was tol supplied?
