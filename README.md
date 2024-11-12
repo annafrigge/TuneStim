@@ -11,7 +11,8 @@ computed using an activation threshold on the electric field strength.
 
 ## Dependencies
 Lead-DBS (v. 2.6 ),
-COMSOL Multiphysics (v. 6, 5.5),
+SPM12,
+COMSOL Multiphysics&reg; (v. 6, 5.5) with MATLAB LiveLink&trade;,
 MATLAB (v. 2020b)
 
 ## Repository Structure
