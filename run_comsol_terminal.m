@@ -38,24 +38,7 @@ end
 %load lead-specific model
 model = mphload(modelname);
 
-if strcmp(pat.lead,'Boston Scientific 2202') || strcmp(pat.lead,'S:t Jude 1331')
-% coupling combinations (H=Horizontal combination, V=Vertical combination)
-coupl_combos = {'C1X'; 'C2A'; 'C2B'; 'C2C'; 'C3A';...
-            'C3B'; 'C3C'; 'C4X';...
-            'C2A_C2B'; 'C2B_C2C'; 'C2C_C2A'; 'C3A_C3B'; 'C3B_C3C';...
-            'C3C_C3A'; ...
-            'C2A_C3A'; 'C2B_C3B'; 'C2C_C3C';...
-            'C2A_C2B_C2C'; 'C3A_C3B_C3C';...
-            'C1X_C2A';'C1X_C2B';'C1X_C2C';...
-            'C4X_C3A';'C4X_C3B';'C4X_C3C';...
-            'C2A_C3B';'C2A_C3C';'C2B_C3A';...
-            'C2B_C3C';'C2C_C3A';'C2C_C3B'};
-elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
-    coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
-                 'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
-                 'Duo_1_2'; 'Duo_2_3'; 'Duo_3_4'; 'Duo_4_5'; 'Duo_5_6';...
-                 'Duo_6_7'; 'Duo_7_8'];
-end
+
 comsolPorts = 2036:1:2036+nProc ;
 
 try parpool(nProc); end
@@ -67,14 +50,6 @@ model.param.loadFile(lead_path);
 
 model.component('comp1').geom('geom1').run('fin');
 
-model.component('comp1').probe('bnd1').genResult('none');
-model.component('comp1').probe('bnd2').genResult('none');
-model.component('comp1').probe('bnd3').genResult('none');
-model.component('comp1').probe('bnd4').genResult('none');
-model.component('comp1').probe('bnd5').genResult('none');
-model.component('comp1').probe('bnd6').genResult('none');
-model.component('comp1').probe('bnd7').genResult('none');
-model.component('comp1').probe('bnd8').genResult('none');
 
 % loading conductivity map 
 model.func.remove('int1');
@@ -98,10 +73,10 @@ model.func('int1').set('fununit', 'S/m');
 %model.sol('sol1').runAll;
 
 % create export of coupling constants
-model.result.export.create('tbl1', 'Table');
-model.result.export('tbl1').set('table', 'tbl1');
-model.result.export('tbl1').set('header', false);
-model.result.export('tbl1').label('Coupling Constants');
+%model.result.export.create('tbl1', 'Table');
+%model.result.export('tbl1').set('table', 'tbl1');
+%model.result.export('tbl1').set('header', false);
+%model.result.export('tbl1').label('Coupling Constants');
 
 
 model.result.export.create('data1', 'Data');
@@ -116,8 +91,8 @@ model.result.export('data1').setIndex('expr', 'ec.normE', 4);
 EfieldFrame = 'mesh'; % or 'grid'
 if strcmp(EfieldFrame,'grid')
     disp('Exporting Efield at grid points...')
-    model.result.dataset('dset2').set('frametype', 'geometry');
-    model.result.export('data1').set('data', 'dset2');
+    model.result.dataset('dset1').set('frametype', 'geometry');
+    model.result.export('data1').set('data', 'dset1');
     % create export of electric field data
     model.result.export('data1').set('location', 'grid');
     model.result.export('data1').set('gridx3', 'range(-0.008+head_x,0.016/89,0.008+head_x)');
@@ -126,8 +101,8 @@ if strcmp(EfieldFrame,'grid')
 
 elseif strcmp(EfieldFrame,'mesh')
     disp('Exporting E-field at mesh nodes...')
-    model.result.dataset('dset2').set('frametype', 'mesh');
-    model.result.export('data1').set('data', 'dset2');
+    model.result.dataset('dset1').set('frametype', 'mesh');
+    model.result.export('data1').set('data', 'dset1');
     model.result.export('data1').set('resolution', 'finer');
     model.result.export('data1').set('smooth', 'internal');
 end
@@ -135,9 +110,17 @@ model.result.export('data1').set('header', false);
 model.sol('sol1').runAll;
 
 
+% switching to either voltage or current stimulation
+if strcmp(pat.unit, '1mA')
+    model.component('comp1').physics('ec').feature('term1').set('TerminalType', 'Current');
+    model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
+elseif strcmp(pat.unit, '1V')
+    model.component('comp1').physics('ec').feature('term1').set('TerminalType', 'Voltage');
+    model.component('comp1').physics('ec').feature('term1').set('V0', 'V0');
+end
 
-% determining coupling constants by keeping inactive contacts floating 
-mkdir(append(pat.path,'EFdistribution_',pat.hand,'_1mA'));
+% creating output directory
+mkdir(append(pat.path,'EFdistribution_',pat.hand,'_',pat.unit));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false);
@@ -147,8 +130,8 @@ mphsave(model,name)
 
 
 tic
-    parfor(i=1:length(coupl_combos),nProc)
-    %for i=1:length(coupl_combos)
+    %parfor(i=1:length(pat.coupl_combos),nProc)
+    for i=1:length(pat.coupl_combos)
         if nProc>1
             t=getCurrentTask();
             taskid = t.ID;
@@ -161,7 +144,7 @@ tic
         end
        
         try 
-            EF_for_config(i,name,pat.path,pat.hand,coupl_combos,pat.lead,EfieldFrame)
+            EF_for_config(i,name,pat,EfieldFrame)
         catch ME
             disp(comsolPort)
             disp(ME)
@@ -172,13 +155,13 @@ out = model;
 disp('comsol done')
 end
 
-function EF_for_config(i,name,pat,coupl_combos,EfieldFrame)
+function EF_for_config(i,name,pat,EfieldFrame)
     
     model = mphload(name);
 
     % activate floating potential on all contacts
     model.component('comp1').physics('ec').feature('fp1').active(true);
-    %disp(append(num2str(i),'/',num2str(length(coupl_combos))))
+    %disp(append(num2str(i),'/',num2str(length(pat.coupl_combos))))
     model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel9');
 
      
@@ -306,7 +289,6 @@ function EF_for_config(i,name,pat,coupl_combos,EfieldFrame)
     end
     elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
         switch i
-        
         case 1 % contact 1
             model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel10');
             model.component('comp1').physics('ec').feature('ncd1').active(true);
@@ -366,19 +348,49 @@ function EF_for_config(i,name,pat,coupl_combos,EfieldFrame)
             model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel24');
             model.component('comp1').physics('ec').feature('ncd8').active(true);
             model.component('comp1').physics('ec').feature('ncd7').active(true);
-
         end
-
+    elseif strcmp(pat.lead,'Medtronic 3887')
+        model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
+    switch i
+        case 1 % Contact 1
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 2 % Contact 2
+            model.component('comp1').geom('geom1').feature('sel_C2X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 3 % Contact 3
+            model.component('comp1').geom('geom1').feature('sel_C3X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 4 % Contact 4
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 5 % Contact 1 and 2
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C2X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 6 % Contact 2 and 3
+            model.component('comp1').geom('geom1').feature('sel_C2X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 7 % Contact 3 and 4
+            model.component('comp1').geom('geom1').feature('sel_C3X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 8 % Contact 1 and 3
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C3X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 9 % Contact 1 and 4
+            model.component('comp1').geom('geom1').feature('sel_C1X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
+        case 10 % Contact 2 and 4
+            model.component('comp1').geom('geom1').feature('sel_C2X').set('contributeto', 'csel1');
+            model.component('comp1').geom('geom1').feature('sel_C4X').set('contributeto', 'csel1');
+            model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
     end
     
-    model.component('comp1').probe('bnd1').genResult('none');
-    model.component('comp1').probe('bnd2').genResult('none');
-    model.component('comp1').probe('bnd3').genResult('none');
-    model.component('comp1').probe('bnd4').genResult('none');
-    model.component('comp1').probe('bnd5').genResult('none');
-    model.component('comp1').probe('bnd6').genResult('none');
-    model.component('comp1').probe('bnd7').genResult('none');
-    model.component('comp1').probe('bnd8').genResult('none');
+    end
     model.sol('sol1').runAll;
 
     if strcmp(EfieldFrame,'mesh')
@@ -390,16 +402,15 @@ function EF_for_config(i,name,pat,coupl_combos,EfieldFrame)
 
         data = [dataV.p',dataV.d1',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
         writematrix(data,append(pat.path,...
-            'EFdistribution_',pat.hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
-            hand,'_1mA_gnd.csv'),'Delimiter',',');
+            'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
+            pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
         model.result.export('data1').set('filename', append(pat.path,...
-            'EFdistribution_',pat.hand,'_1mA/V_EF_cont_',coupl_combos{i,:},'_', ...
-            pat.hand,'_1mA_gnd.csv'));
+            'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
+            pat.hand,'_',pat.unit,'_gnd.csv'));
         model.result.export('data1').run;
     end
     model.component('comp1').geom('geom1').selection.remove('csel1.bnd');
     disp(i)
-
-end
+    end

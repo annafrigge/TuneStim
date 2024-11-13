@@ -23,7 +23,7 @@ elseif strcmp(pat.lead,'Boston Scientific 2202')
     %surface ara of contacts Boston Scientific
     A_shell_tot = 6.0E-6;
     A_shell_seg = 1.5E-6;
-elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
+else 
     A_shell_tot = 6.0E-6;
     A_shell_seg = 0;
 end

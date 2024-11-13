@@ -301,7 +301,7 @@ model.result('pg2').feature('iso1').set('levels', 200);
 model.result('pg2').feature('iso1').set('coloring', 'uniform');
 model.result('pg2').feature('iso1').set('color', 'cyan');
 model.result('pg2').set('showhiddenobjects', true);
-model.result('pg2').feature('iso1').set('data', 'dset2');
+model.result('pg2').feature('iso1').set('data', 'dset1');
 model.result('pg2').run;
 
 

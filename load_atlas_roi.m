@@ -46,6 +46,10 @@ elseif strcmp(cohort.atlas,'Human Dysfunctome Atlas (Hollunder 2024)')
           'templates\space\MNI152NLin2009bAsym\',...
           'atlases',filesep,cohort.atlas,filesep,hand,filesep);
     downsampling = 1;
+elseif strcmp(cohort.atlas,'OCD Response Tract Atlas (Li 2020)')
+    disp('OCD Response Tract Atlas is not yet supported in native space.')
+    path = append(apath,'atlases',filesep,cohort.atlas,filesep,hand,filesep);
+    downsampling = 1;
 end
   
 for t=1:length(cohort.targets)
