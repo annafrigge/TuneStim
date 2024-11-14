@@ -20,14 +20,14 @@ import com.comsol.model.*
 import com.comsol.model.util.*
 
 
-if strcmp(lead,'Boston Scientific 2202')
+if strcmp(lead,'Boston Scientific Vercise Directional 2202')
     disp('Loading Boston 2202 lead')
     modelname = 'bostonsctf_simulation.mph';
-elseif strcmp(lead,'S:t Jude 1331')
+elseif strcmp(lead,'Abbott Infinity Directed (short)')
     disp('Loading Stjude 1331 lead')
     modelname = 'stjude_simulation.mph';
-elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
-    disp('Loading Boston Scientific Vercise Cartesia')
+elseif strcmp(lead,'Boston Scientific Vercise Standard 2201')
+    disp('Loading Boston Scientific Vercise Standard 2201')
     modelname = 'bostonsctf_vercartesia_simulation.mph';
 end
 
@@ -35,7 +35,7 @@ end
 %load lead-specific model
 model = mphload(modelname);
 
-if strcmp(lead,'Boston Scientific 2202') || strcmp(lead,'S:t Jude 1331')
+if strcmp(lead,'Boston Scientific Vercise Directional 2202') || strcmp(lead,'Abbott Infinity Directed (short)')
 % coupling combinations (H=Horizontal combination, V=Vertical combination)
 coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
@@ -47,7 +47,7 @@ coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'C4X_C3A';'C4X_C3B';'C4X_C3C';...
                  'C2A_C3B';'C2A_C3C';'C2B_C3A';...
                  'C2B_C3C';'C2C_C3A';'C2C_C3B'];
-elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+elseif strcmp(lead,'Boston Scientific Vercise Standard 2201')
     coupl_combos = ['Mono_1X'; 'Mono_2A'; 'Mono_2B'; 'Mono_2C'; 'Mono_3A';...
                  'Mono_3B'; 'Mono_3C'; 'Mono_4X';...
                  'Duo_1_2'; 'Duo_2_3'; 'Duo_3_4'; 'Duo_4_5'; 'Duo_5_6';...
@@ -188,7 +188,7 @@ function EF_for_config(i,name,pat.path,hand,coupl_combos,lead,EfieldFrame)
     %disp(append(num2str(i),'/',num2str(length(coupl_combos))))
     model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel9');
     
-    if strcmp(lead,'Boston Scientific 2202') || strcmp(lead,'S:t Jude 1331')
+    if strcmp(lead,'Boston Scientific Vercise Directional 2202') || strcmp(lead,'Abbott Infinity Directed (short)')
     switch i
         case 1 % contact 1
             model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel10');
@@ -333,7 +333,7 @@ function EF_for_config(i,name,pat.path,hand,coupl_combos,lead,EfieldFrame)
             model.component('comp1').physics('ec').feature('ncd7').active(true);
 
     end
-    elseif strcmp(lead,'Boston Scientific Vercise Cartesia')
+    elseif strcmp(lead,'Boston Scientific Vercise Standard 2201')
         switch i
         
         case 1 % contact 1

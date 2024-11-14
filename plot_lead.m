@@ -45,9 +45,9 @@ function plot_lead(pat.path,bestSolution,hand,pat.space)
     % Rotation = vrrotvec2mat(r);
     % 
     % Rotation_z =rotz(orientation);
-    % if strcmp(lead,'S:t Jude 1331')
+    % if strcmp(lead,'Abbott Infinity Directed (short)')
     %     load("Leads/stjude_directed_short.mat")
-    % elseif strcmp(lead,'Boston Scientific 2202')
+    % elseif strcmp(lead,'Boston Scientific Vercise Directional 2202')
     %     load("Leads/boston_vercise_directed.mat")
     % 
     % end

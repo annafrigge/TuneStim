@@ -20,14 +20,14 @@ import com.comsol.model.*
 import com.comsol.model.util.*
 
 
-if strcmp(pat.lead,'Boston Scientific 2202')
+if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
     disp('Loading Boston 2202 lead')
     modelname = 'bostonsctf_simulationTerminal.mph';
-elseif strcmp(pat.lead,'S:t Jude 1331')
+elseif strcmp(pat.lead,'Abbott Infinity Directed (short)')
     disp('Loading Stjude 1331 lead')
     modelname = 'stjude1331_simulationTerminal.mph';
-elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
-    disp('Loading Boston Scientific Vercise Cartesia')
+elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
+    disp('Loading Boston Scientific Vercise Standard 2201')
     modelname = 'bostonsctf_vercartesia_simulation.mph';
 elseif strcmp(pat.lead,'Medtronic 3887')
     disp('Loading Medtronic 3887')
@@ -165,7 +165,7 @@ function EF_for_config(i,name,pat,EfieldFrame)
     model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel9');
 
      
-    if strcmp(pat.lead,'Boston Scientific 2202') || strcmp(pat.lead,'S:t Jude 1331')
+    if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202') || strcmp(pat.lead,'Abbott Infinity Directed (short)')
         model.component('comp1').geom('geom1').selection.create('csel1', 'CumulativeSelection');
     switch i
         case 1 % contact 1
@@ -287,7 +287,7 @@ function EF_for_config(i,name,pat,EfieldFrame)
             model.component('comp1').geom('geom1').feature('sel_C3B').set('contributeto', 'csel1');
             model.component('comp1').physics('ec').feature('term1').selection.named('geom1_csel1_bnd');
     end
-    elseif strcmp(pat.lead,'Boston Scientific Vercise Cartesia')
+    elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
         switch i
         case 1 % contact 1
             model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel10');

@@ -14,12 +14,12 @@ function [head,tail] = get_lead_parameters(pat,hands)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-if strcmp(pat.lead,'S:t Jude 1331')
+if strcmp(pat.lead,'Abbott Infinity Directed (short)')
     % surface area of contacts S:t Jude short
     A_shell_tot = 5.9768E-6;
     A_shell_seg = 1.2453E-6;
     pat.orientation = pat.orientation + 175;
-elseif strcmp(pat.lead,'Boston Scientific 2202')
+elseif strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
     %surface ara of contacts Boston Scientific
     A_shell_tot = 6.0E-6;
     A_shell_seg = 1.5E-6;

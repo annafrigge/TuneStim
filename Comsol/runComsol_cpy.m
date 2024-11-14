@@ -17,8 +17,8 @@ function out = runComsol(pat.path,hand,pat.space,nProc,lead)
 %                      native or MNI 
 % nProc             : (int) number of parallel processes
 %
-% lead              : (str) lead type. Currently either S:t Jude 1331 or
-%                      Boston Scientific 2202.
+% lead              : (str) lead type. Currently either Abbott Infinity Directed (short) or
+%                      Boston Scientific Vercise Directional 2202.
 
 
 addpath('/sw/apps/comsol/x86_64/6.0/mli');

@@ -44,7 +44,7 @@ function msg = main(cohort)
 %
 % ToDo:
 % 1. Include all other leads
-% 2. Boston Scientific Vercise Cartesia -- Terminal!
+% 2. Boston Scientific Vercise Standard 2201 -- Terminal!
 % 3. Lead DBS version 3.1 support
 % 4. Include tests and error messages!
 % 5. Include option for current and voltage stimulation!!!
