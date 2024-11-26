@@ -23,6 +23,6 @@ In the folder sBatchOutput, the slurm job log files are stored in case the pipel
 Before using TuneS, the pre- and postoperative acqusitions need to be pre-processed. This includes co-registration of pre- and postoperative images, normalization to MNI space and reconstruction of the lead coordinates using Lead-DBS. 
 
 ## Getting started.
-Open the GUI by double-clicking the file 'TuneS.mlapp'. Insert your input parameters of choice and run.
-Check the following pre-print for additional information:
+While being in the TuneStim folder or after adding it to your MATLAB path, type 'TuneStim' to open the GUI. Insert your input parameters of choice and run.
+Check the following pre-print for additional information: 
 
