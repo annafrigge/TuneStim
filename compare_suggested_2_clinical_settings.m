@@ -1,4 +1,4 @@
-function out = compare_suggested_2_clinical_settingsClinical(pat,hand,head,tail,cohort,Vol_target,Vol_constraint)
+function out = compare_suggested_2_clinical_settings(pat,hand,head,tail,cohort,Vol_target,Vol_constraint)
 
 if strcmp(hand,'sin')
     i=1;
@@ -31,7 +31,16 @@ end
 
     for j = 1:size(clinicalSettings,1)
         % set current amplitude
-        model.param.set('I0', clinicalSettings{j,2}*1e-3);   
+        if strcmp(pat.unit, '1mA')
+            model.component('comp1').physics('ec').feature('term1').set('TerminalType', 'Current');
+            model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
+            model.param.set('I0', clinicalSettings{j,2}*1e-3); 
+        elseif strcmp(pat.unit, '1V')
+            model.component('comp1').physics('ec').feature('term1').set('TerminalType', 'Voltage');
+            model.component('comp1').physics('ec').feature('term1').set('V0', 'V0');
+            model.param.set('V0', clinicalSettings{j,2}*1e-3); 
+        end
+
         % set active contacts
         activeContacts = strsplit(clinicalSettings{j},',')';
         N1 = size(activeContacts,1);% # active negative contacts
@@ -87,7 +96,7 @@ end
         mkdir(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages'))
         fid=fopen(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages',filesep,'Coverages_',pat.space,'_',hand,'_pointwise.txt'),'w');
         fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t cohort.EThreshold %s \t  Target Coverage \t Spill \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
-        if contains(cohort.targets{1,1},'XYZ')% contains(cohort.targets{1,1},'tract')
+        if contains(cohort.targets{1,1},'tract')% contains(cohort.targets{1,1},'tract')
             for j=1:size(clinicalSettings,1)
                 [afibs,pActTarget{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormTargetFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
@@ -97,9 +106,8 @@ end
                 [pActTarget{j},pActSpill{j},~] = volume_of_tissue_activated(dataEnorm{j},Vol_target,R,head,leadvector,EThresh(j));
             end
         end
-        if contains(cohort.constraints,'XYZ') % contains(cohort.targets{1,1},'tract')
+        if contains(cohort.constraints,'tract') % contains(cohort.targets{1,1},'tract')
             for j=1:size(clinicalSettings,1)
-
                 [afibs,pActConstraint{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormConstraintFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
             end
@@ -120,10 +128,11 @@ end
         end
         fclose(fid);
     end
+
         % 1) Open .txt file
         mkdir(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages'))
         fid=fopen(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages',filesep,'alphaShapeCoverages_',pat.space,'_',hand,'.txt'),'w');
-        fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t cohort.EThreshold %s \t  VTA volume [mm^3] \t Target Coverage \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
+        fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t EThreshold %s \t  VTA volume [mm^3] \t Target Coverage \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
 
         % 2) Compute alphaShape of Targets and Constraints
         shpTarget = alphaShape(Vol_target(:,1:3));
