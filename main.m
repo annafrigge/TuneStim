@@ -377,7 +377,7 @@ for patient=1:length(cohort.patNames)
             disp('Not plotting...')
         end
         if cohort.compareSettings %&& strcmp(char(cohort.patNames(pat.name,:)),cohort.selectedPatient)
-            out = compare_suggested_2_clinical_settingsClinical(pat,pat.hand,head,tail,cohort,Vol_target,Vol_constraint);
+            out = compare_suggested_2_clinical_settings(pat,pat.hand,head,tail,cohort,Vol_target,Vol_constraint);
         end
         msg = 'Done comparing settings.';
     end

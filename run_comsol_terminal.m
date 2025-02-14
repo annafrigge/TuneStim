@@ -86,7 +86,7 @@ model.result.export('data1').setIndex('expr', 'ec.Ex', 1);
 model.result.export('data1').setIndex('expr', 'ec.Ey', 2);
 model.result.export('data1').setIndex('expr', 'ec.Ez', 3);
 model.result.export('data1').setIndex('expr', 'ec.normE', 4);
-
+%model.result.export('data1').set('data', 'dset2');
 
 EfieldFrame = 'mesh'; % or 'grid'
 if strcmp(EfieldFrame,'grid')
@@ -123,7 +123,7 @@ end
 mkdir(append(pat.path,'EFdistribution_',pat.hand,'_',pat.unit));
 
 % deactive grounding on contacts
-model.component('comp1').physics('ec').feature('gnd2').active(false);
+model.component('comp1').physics('ec').feature('gnd2').active(false); % true for grounded contacts, false for floating contacts
 
 name = append(pat.path,'DBS_simulation.mph');
 mphsave(model,name)
@@ -394,18 +394,22 @@ function EF_for_config(i,name,pat,EfieldFrame)
     model.sol('sol1').runAll;
 
     if strcmp(EfieldFrame,'mesh')
-        dataV = mpheval(model,'V','selection','geom1_sel11'); % geom1_sel11 corresponds to inhomogeneous box
-        dataEx = mpheval(model,'ec.Ex','selection','geom1_sel11');
-        dataEy = mpheval(model,'ec.Ey','selection','geom1_sel11');
-        dataEz = mpheval(model,'ec.Ez','selection','geom1_sel11');
-        dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
+        %dataV = mpheval(model,'V','selection','geom1_sel11','edim',0); % geom1_sel11 corresponds to inhomogeneous box + encapsulation
+        %dataEx = mpheval(model,'ec.Ex','selection','geom1_sel11','edim',0);
+        %dataEy = mpheval(model,'ec.Ey','selection','geom1_sel11');
+        %dataEz = mpheval(model,'ec.Ez','selection','geom1_sel11');
+        %dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
+        dataMesh = mpheval(model,{'V','ec.Ex','ec.Ey','ec.Ez','ec.normE'},'selection','geom1_sel11');
 
-        data = [dataV.p',dataV.d1',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
+        data = [dataMesh.p',dataMesh.d1',dataMesh.d2',dataMesh.d3',dataMesh.d4',dataMesh.d5']; % 
+        %data = [dataEnorm.p',zeros(size(dataEx.d1))',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
         writematrix(data,append(pat.path,...
             'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
-            pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+           pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
+        model.result.dataset('dset1').set('frametype', 'mesh');
         model.result.export('data1').set('filename', append(pat.path,...
             'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
             pat.hand,'_',pat.unit,'_gnd.csv'));

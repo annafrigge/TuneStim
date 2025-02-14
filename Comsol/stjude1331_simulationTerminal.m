@@ -127,7 +127,7 @@ model.component('comp1').geom('geom1').feature('sel10').selection('selection').s
 model.component('comp1').geom('geom1').feature('sel10').label('LeadNoContacts');
 
 model.component('comp1').geom('geom1').create('sel11', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('fin', 2);
+model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('fin', [2 3 4 24]); %[2 3 4 24]
 model.component('comp1').geom('geom1').feature('sel11').label('InhomBox');
 
 
@@ -182,46 +182,46 @@ model.component('comp1').physics('ec').feature('gnd2').label('Ground Contacts');
 model.component('comp1').physics('ec').feature('gnd2').selection.named('geom1_sel9');
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
-model.component('comp1').probe.create('bnd1', 'Boundary');
-model.component('comp1').probe('bnd1').set('intsurface', true);
-model.component('comp1').probe('bnd1').label('Contact 1 V');
-model.component('comp1').probe('bnd1').selection.named('geom1_sel_C1X');
-model.component('comp1').probe.create('bnd2', 'Boundary');
-model.component('comp1').probe('bnd2').set('intsurface', true);
-model.component('comp1').probe('bnd2').label('Contact 2A V');
-model.component('comp1').probe('bnd2').selection.named('geom1_sel_C2A');
-model.component('comp1').probe.create('bnd3', 'Boundary');
-model.component('comp1').probe('bnd3').set('intsurface', true);
-model.component('comp1').probe('bnd3').label('Contact 2C V');
-model.component('comp1').probe('bnd3').selection.named('geom1_sel_C2C');
-model.component('comp1').probe.create('bnd4', 'Boundary');
-model.component('comp1').probe('bnd4').set('intsurface', true);
-model.component('comp1').probe('bnd4').label('Contact 2B V');
-model.component('comp1').probe('bnd4').selection.named('geom1_sel_C2B');
-model.component('comp1').probe.create('bnd5', 'Boundary');
-model.component('comp1').probe('bnd5').set('intsurface', true);
-model.component('comp1').probe('bnd5').label('Contact 3A V');
-model.component('comp1').probe('bnd5').selection.named('geom1_sel_C3A');
-model.component('comp1').probe.create('bnd6', 'Boundary');
-model.component('comp1').probe('bnd6').set('intsurface', true);
-model.component('comp1').probe('bnd6').label('Contact 3C V');
-model.component('comp1').probe('bnd6').selection.named('geom1_sel_C3C');
-model.component('comp1').probe.create('bnd7', 'Boundary');
-model.component('comp1').probe('bnd7').set('intsurface', true);
-model.component('comp1').probe('bnd7').label('Contact 3B V');
-model.component('comp1').probe('bnd7').selection.named('geom1_sel_C3B');
-model.component('comp1').probe.create('bnd8', 'Boundary');
-model.component('comp1').probe('bnd8').set('intsurface', true);
-model.component('comp1').probe('bnd8').label('Contact 4 V');
-model.component('comp1').probe('bnd8').selection.named('geom1_sel_C4X');
-model.component('comp1').probe('bnd1').genResult('none');
-model.component('comp1').probe('bnd2').genResult('none');
-model.component('comp1').probe('bnd3').genResult('none');
-model.component('comp1').probe('bnd4').genResult('none');
-model.component('comp1').probe('bnd5').genResult('none');
-model.component('comp1').probe('bnd6').genResult('none');
-model.component('comp1').probe('bnd7').genResult('none');
-model.component('comp1').probe('bnd8').genResult('none');
+% model.component('comp1').probe.create('bnd1', 'Boundary');
+% model.component('comp1').probe('bnd1').set('intsurface', true);
+% model.component('comp1').probe('bnd1').label('Contact 1 V');
+% model.component('comp1').probe('bnd1').selection.named('geom1_sel_C1X');
+% model.component('comp1').probe.create('bnd2', 'Boundary');
+% model.component('comp1').probe('bnd2').set('intsurface', true);
+% model.component('comp1').probe('bnd2').label('Contact 2A V');
+% model.component('comp1').probe('bnd2').selection.named('geom1_sel_C2A');
+% model.component('comp1').probe.create('bnd3', 'Boundary');
+% model.component('comp1').probe('bnd3').set('intsurface', true);
+% model.component('comp1').probe('bnd3').label('Contact 2C V');
+% model.component('comp1').probe('bnd3').selection.named('geom1_sel_C2C');
+% model.component('comp1').probe.create('bnd4', 'Boundary');
+% model.component('comp1').probe('bnd4').set('intsurface', true);
+% model.component('comp1').probe('bnd4').label('Contact 2B V');
+% model.component('comp1').probe('bnd4').selection.named('geom1_sel_C2B');
+% model.component('comp1').probe.create('bnd5', 'Boundary');
+% model.component('comp1').probe('bnd5').set('intsurface', true);
+% model.component('comp1').probe('bnd5').label('Contact 3A V');
+% model.component('comp1').probe('bnd5').selection.named('geom1_sel_C3A');
+% model.component('comp1').probe.create('bnd6', 'Boundary');
+% model.component('comp1').probe('bnd6').set('intsurface', true);
+% model.component('comp1').probe('bnd6').label('Contact 3C V');
+% model.component('comp1').probe('bnd6').selection.named('geom1_sel_C3C');
+% model.component('comp1').probe.create('bnd7', 'Boundary');
+% model.component('comp1').probe('bnd7').set('intsurface', true);
+% model.component('comp1').probe('bnd7').label('Contact 3B V');
+% model.component('comp1').probe('bnd7').selection.named('geom1_sel_C3B');
+% model.component('comp1').probe.create('bnd8', 'Boundary');
+% model.component('comp1').probe('bnd8').set('intsurface', true);
+% model.component('comp1').probe('bnd8').label('Contact 4 V');
+% model.component('comp1').probe('bnd8').selection.named('geom1_sel_C4X');
+% model.component('comp1').probe('bnd1').genResult('none');
+% model.component('comp1').probe('bnd2').genResult('none');
+% model.component('comp1').probe('bnd3').genResult('none');
+% model.component('comp1').probe('bnd4').genResult('none');
+% model.component('comp1').probe('bnd5').genResult('none');
+% model.component('comp1').probe('bnd6').genResult('none');
+% model.component('comp1').probe('bnd7').genResult('none');
+% model.component('comp1').probe('bnd8').genResult('none');
 
 model.component('comp1').mesh('mesh1').automatic(false);
 model.component('comp1').mesh('mesh1').feature('size').set('custom', true);
@@ -262,14 +262,14 @@ model.sol('sol1').feature('s1').feature('fc1').set('linsolver', 'i1');
 model.sol('sol1').feature('s1').feature.remove('fcDef');
 model.sol('sol1').attach('std1');
 
-model.component('comp1').probe('bnd1').genResult('none');
-model.component('comp1').probe('bnd2').genResult('none');
-model.component('comp1').probe('bnd3').genResult('none');
-model.component('comp1').probe('bnd4').genResult('none');
-model.component('comp1').probe('bnd5').genResult('none');
-model.component('comp1').probe('bnd6').genResult('none');
-model.component('comp1').probe('bnd7').genResult('none');
-model.component('comp1').probe('bnd8').genResult('none');
+% model.component('comp1').probe('bnd1').genResult('none');
+% model.component('comp1').probe('bnd2').genResult('none');
+% model.component('comp1').probe('bnd3').genResult('none');
+% model.component('comp1').probe('bnd4').genResult('none');
+% model.component('comp1').probe('bnd5').genResult('none');
+% model.component('comp1').probe('bnd6').genResult('none');
+% model.component('comp1').probe('bnd7').genResult('none');
+% model.component('comp1').probe('bnd8').genResult('none');
 
 
 model.component('comp1').physics('ec').create('term1', 'Terminal', 2);
@@ -301,9 +301,10 @@ model.result('pg2').feature('iso1').set('levels', 200);
 model.result('pg2').feature('iso1').set('coloring', 'uniform');
 model.result('pg2').feature('iso1').set('color', 'cyan');
 model.result('pg2').set('showhiddenobjects', true);
-model.result('pg2').feature('iso1').set('data', 'dset2');
+model.result('pg2').feature('iso1').set('data', 'dset1');
 model.result('pg2').run;
 
+model.result.dataset('dset1').set('frametype', 'mesh');
 
 model.sol('sol1').runAll;
 

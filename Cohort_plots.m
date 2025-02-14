@@ -14,7 +14,7 @@ orientations = {[293,314],[249,288],[12,302],[25,153],[98,193],[52,345],...
                [32,116],[202,184],16.4,[308,38]};
 
 amplitudes = {[3,2.85],[4.6,1.5],[3.4,4.6],[2.6,2],[1.7,2.6],[3.2,1.5],[1.2,3],[4.4,3.3],[3.8,0],[1,2.4]};
-cohort.optischeme = 'conservative';%'Ruben';%'mincov';%%
+cohort.optischeme ='Ruben';% 'conservative';%'mincov';%%
 cohort.atlas = 'DISTAL Minimal (Ewert 2017)';
 cohort.targets = {'STN_motor.nii.gz'};
 cohort.constraints = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
@@ -88,15 +88,15 @@ xlabel('Relaxation [\%]')
 %ylabel('Amplitude [mA]')
 ylabel('Score')
 %ylabel('Target Coverage [\%]')
-%ylim([0,100])
-ylim([0,50])
-title('\textbf{STN subdivisions}')
+ylim([0,100])
+%ylim([0,50])
+title('\textbf{STN streamlines}')
 
 set(gca,'TickLabelInterpreter','latex')
 
 f = gcf;
 set(f, 'Position',  [100, 100, 950, 700])
-exportgraphics(f,[cohort_path,filesep,'RubenSTNSubsRelaxationVsScore.png'],'Resolution',300)
+exportgraphics(f,[cohort_path,filesep,'RubenSTNStreamlinesRelaxationVsScore.png'],'Resolution',300)
 
 %% Clinical Dice
 hands = {'sin','dx'};
@@ -350,7 +350,7 @@ xlim([0,21])
 ylim([0,7.2])
 xticks([0,10,20])
 set(0, 'DefaultAxesFontSize', 18);
-title('\textbf{STN tracts}')
+title('\textbf{STN streamlines}')
 % fit lognorm distribution
 %pd = fitdist(TargetPercents', 'Lognormal');
 %hold on
@@ -440,14 +440,14 @@ set(gca, 'YTick', yticks, 'YTickLabel', Contact_labels);
 %set(gca,'YTickLabel',[]);
 colorbar
 colormap(parula(10))
-clim([0 10]);
-title('\textbf{STN tracts}')
+%clim([0 10]);
+title('\textbf{STN streamlines}')
 set(gca,'TickLabelInterpreter','latex')
 axis tight
 axis equal
 f = gcf;
 %set(f, 'Position',  [100, 100, 950, 700])
-exportgraphics(f,[cohort_path,filesep,'ConservativeSTNTractCount100.png'],'Resolution',300)
+exportgraphics(f,[cohort_path,filesep,'NonlinearSTNStreamlinesCount100.png'],'Resolution',300)
 
 %% Extract Top suggested settings
 hands = {'sin','dx'};
