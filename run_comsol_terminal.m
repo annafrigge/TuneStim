@@ -44,7 +44,7 @@ comsolPorts = 2036:1:2036+nProc ;
 try parpool(nProc); end
 
 %switch to the actual patient of choice
-lead_path = append(pat.path,'lead_parameters_',pat.space,...
+lead_path = append(pat.TuneSderivativesPath,'lead_parameters_',pat.space,...
                             '_',pat.hand,'.txt');
 model.param.loadFile(lead_path);
 
@@ -56,7 +56,7 @@ model.func.remove('int1');
 model.func.create('int1', 'Interpolation');
 model.func('int1').set('source', 'file');
 if strcmp(pat.space,'native')
-    model.func('int1').set('filename', append(pat.path,'conductivity_map_',pat.hand,'_native.csv'));
+    model.func('int1').set('filename', append(pat.TuneSderivativesPath,'conductivity_map_',pat.hand,'_native.csv'));
 else
     model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',pat.hand,'_MNI.csv'));
 end
@@ -120,12 +120,12 @@ elseif strcmp(pat.unit, '1V')
 end
 
 % creating output directory
-mkdir(append(pat.path,'EFdistribution_',pat.hand,'_',pat.unit));
+mkdir(append(pat.TuneSderivativesPath,'EFdistribution_',pat.hand,'_',pat.unit));
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false); % true for grounded contacts, false for floating contacts
 
-name = append(pat.path,'DBS_simulation.mph');
+name = append(pat.TuneSderivativesPath,'DBS_simulation.mph');
 mphsave(model,name)
 
 
@@ -403,14 +403,14 @@ function EF_for_config(i,name,pat,EfieldFrame)
 
         data = [dataMesh.p',dataMesh.d1',dataMesh.d2',dataMesh.d3',dataMesh.d4',dataMesh.d5']; % 
         %data = [dataEnorm.p',zeros(size(dataEx.d1))',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
-        writematrix(data,append(pat.path,...
+        writematrix(data,append(pat.TuneSderivativesPath,...
             'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
            pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
 
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
         model.result.dataset('dset1').set('frametype', 'mesh');
-        model.result.export('data1').set('filename', append(pat.path,...
+        model.result.export('data1').set('filename', append(pat.TuneSderivativesPath,...
             'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
             pat.hand,'_',pat.unit,'_gnd.csv'));
         model.result.export('data1').run;

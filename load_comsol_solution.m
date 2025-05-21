@@ -20,7 +20,7 @@ function [InitialSolution_clean] = load_comsol_solution(pat,Nthreads)
 
     disp('load Comsol solution')
 
-    path = append(pat.path,'EFdistribution_',pat.hand,'_',pat.unit,'/');
+    path = append(pat.TuneSderivativesPath,'EFdistribution_',pat.hand,'_',pat.unit,'/');
 
     N = length(pat.coupl_combos);
     names = cell(1,N);

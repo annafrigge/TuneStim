@@ -63,6 +63,8 @@ for t=1:length(cohort.constraints)
 end
 
 [target_lst,constraint_lst, atlas_struct] = get_target_and_constraint_coordinates(path, cohort.targets,cohort.constraints,hand,max,min);
+
+% REPLACE/modify with voxel filtering
 if downsampling
     target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,3) > head(3)-15e-3 & target_lst{1,1}(:,3) < head(3)+15e-3, :);
     target_lst{1,1} = target_lst{1,1}(target_lst{1,1}(:,2) > head(2)-15e-3 & target_lst{1,1}(:,2) < head(2)+15e-3, :);

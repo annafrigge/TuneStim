@@ -47,7 +47,6 @@ function msg = main(cohort)
 % 2. Boston Scientific Vercise Standard 2201 -- Terminal!
 % 3. Lead DBS version 3.1 support
 % 4. Include tests and error messages!
-% 5. Include option for current and voltage stimulation!!!
 
 tic
 settings;
@@ -64,7 +63,31 @@ end
 counter = 1;
 for patient=1:length(cohort.patNames)
     disp(append('Patient ',cohort.patNames{patient,:},' loading ...'))
-    pat.path = char(append(cohort.folder,filesep,cohort.patNames{patient,:},filesep));
+
+    % Input and Output directories
+    if cohort.simulationSettings.LeadDBSVersion < 3.0
+        pat.path = char(append(cohort.folder,filesep,cohort.patNames{patient,:},filesep));
+        pat.TuneSderivativesPath = pat.path;
+        pat.outputPath = [pat.path,'Suggestions',filesep,...
+        extractBefore(cohort.targets{1,1},'.'),filesep,...
+        cohort.optischeme,filesep,num2str(cohort.CThreshold),...
+        filesep,'S-',num2str(cohort.omega(1)),'-',...
+        num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
+
+        mkdir(pat.outputPath)
+    else
+        pat.path = char(append(cohort.folder,filesep,'derivatives',filesep,...
+                        'leaddbs', filesep, cohort.patNames{patient,:},filesep));
+        pat.TuneSderivativesPath = [cohort.folder,filesep,'derivatives',filesep,'TuneS',filesep,...
+            cohort.patNames{patient,:},filesep];
+        pat.outputPath = [pat.TuneSpath,'Suggestions',filesep,...
+            extractBefore(cohort.targets{1,1},'.'),filesep,...
+            cohort.optischeme,filesep,num2str(cohort.CThreshold),...
+            filesep,'S-',num2str(cohort.omega(1)),'-',...
+            num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
+        mkdir(pat.outputPath)
+    end
+
     pat.orientation = [cohort.leadOrientations{patient,1}, cohort.leadOrientations{patient,2}];    
     hands = {"sin","dx"};
     
@@ -97,17 +120,11 @@ for patient=1:length(cohort.patNames)
     else
         cohort.threads = 0;
     end
-
-    %% Outout directories
-
-    mkdir([pat.path,'Suggestions'])
-    pat.outputPath = [pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,cohort.optischeme,filesep,num2str(cohort.CThreshold),filesep,'S-',num2str(cohort.omega(1)),'-',num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
-
-    mkdir(pat.outputPath)
+ 
 
 
     %% reconstructed lead parameters
-    [heads,tails]=get_lead_parameters(pat,hands);
+    [heads,tails] = get_lead_parameters(pat,hands);
 
 
     %% conductivity maps

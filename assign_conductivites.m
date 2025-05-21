@@ -65,8 +65,6 @@ GM_xyz(:,closestIndex)'
 %% assign conductivitty values
 % conductivity values from Cubo et al. (2019), adapt to frequency and pulse width?
 
-
-
 GM_intensities(GM_intensities<0.5)  = 0.0;
 GM_intensities(GM_intensities>=0.5) = 0.09;%1
 

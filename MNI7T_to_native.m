@@ -19,7 +19,7 @@ function MNI7T_to_native(pat.path,cohort.rebuild)
     lead path;
     map_path = which('MNI_ICBM_2009b_NLIN_ASYM/t1.nii');
 
-    if ~isfile(fullfile(pat.path, 'wt1.nii')) || cohort.rebuild == 1
+    if ~isfile(fullfile(pat.TuneSderivativesPath, 'wt1.nii')) || cohort.rebuild == 1
         disp('Map from MNI to native pat.space...')
 
         forwardvars = { % Specify patient folder(s) on which to base normalizations here.

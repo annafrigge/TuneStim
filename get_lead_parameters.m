@@ -40,9 +40,9 @@ for i=1:length(hands)
         side_nr = 2;
 
     end
-    if isnan(pat.orientation(i))
-         continue
-    end
+    %if ~exist('pat.orientation','var') == 0 && isnan(pat.orientation(i)) 
+    %     continue
+    %end
     [h,t] = get_lead_coordinates(pat,side_nr);
     disp('head-tail (dx, sin) distance is:')
     disp(append(num2str(norm(h-t)),' m'))
@@ -63,7 +63,7 @@ for i=1:length(hands)
     
     % write parameters to .txt file
     write_lead_parameters_to_txt(pat, A_shell_tot,A_shell_seg,...
-                             h,pat.orientation(i), t, axis,...
+                             h, t, axis,...
                              alpha,V0,I0,hands{i});
 
     head.(hands{i}) = h;

@@ -1,10 +1,10 @@
+
 function [] = write_lead_parameters_to_txt(pat, A_shell_tot,...
-                                           A_shell_seg, head, orientation,...
+                                           A_shell_seg, head,...
                                            tail, axis, alpha,V0,I0,hand)
 
 %head_z_displ = head(3)-2.25e-3;
-
-fileID = fopen(append(pat.path,...
+fileID = fopen(append(pat.TuneSderivativesPath,...
                'lead_parameters_',pat.space, '_', hand,'.txt'),'w');
 
 fprintf(fileID,'%11s  %9.7f\r\n','A_shell_tot',A_shell_tot);
@@ -12,7 +12,11 @@ fprintf(fileID,'%11s  %9.7f\r\n','A_shell_seg',A_shell_seg);
 fprintf(fileID,'%6s  %9.7f\r\n','head_x',head(1));
 fprintf(fileID,'%6s  %9.7f\r\n','head_y',head(2));
 fprintf(fileID,'%6s  %9.7f\r\n','head_z',head(3));
-fprintf(fileID,'%10s %9.7f\r\n','orientation',orientation);
+if isfield(pat,'orientation')
+    fprintf(fileID,'%10s %9.7f\r\n','orientation',pat.orientation);
+else
+    fprintf(fileID,'%10s %9.7f\r\n','orientation',0);
+end
 fprintf(fileID,'%6s  %9.7f\r\n','tail_x',tail(1));
 fprintf(fileID,'%6s  %9.7f\r\n','tail_y',tail(2));
 fprintf(fileID,'%6s  %9.7f\r\n','tail_z',tail(3));
