@@ -1,4 +1,4 @@
-function volume_outside = remove_lead_volume2(V,head,tail)
+function volume_outside = remove_lead_volume2(pat,V,head,tail)
 % A function that generates a matrix with coordinates outside a lead, defined by the head and tail, lead radius and length
 % first, the rotation matrix to get to the lead coordinate system is
 % generated. Using this matrix a point in V is rotated from the coordinate
@@ -21,12 +21,26 @@ vlead0=[0,0,1];
 r = vrrotvec(vlead0,leadvector);
 Rotation = vrrotvec2mat(r);
 
-translation_factor =  head - 2.25e-3 * leadvector;
+if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
+    translation_factor =  head - 0.75*1e-3 * leadvector;
+    R_cyl=0.5*1.3*1e-3;
+elseif strcmp(pat.lead,'Abbott Infinity Directed (short)')
+    translation_factor =  head - 2.25e-3 * leadvector;
+    R_cyl=0.5*1.27*1e-3; %((0.00127/2)+0.0005);
+elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
+    translation_factor =  head - 2.25e-3 * leadvector;
+    R_cyl=0.5*1.3*1e-3;
+elseif strcmp(pat.lead,'Medtronic 3887')
+    translation_factor =  head - 2.25e-3 * leadvector;
+    R_cyl=0.5*1.27*1e-3;
+end
+
 z_cyl = 0.1;
-R_cyl=((0.00127/2)+0.0005);
 
 i=1;
 j=1;
+volume_inside = [];
+volume_outside = [];
 for row=1:length(V(:,1))
     P = (Rotation'*(V(row,1:3)- translation_factor)')';
     [theta,rho,z] = cart2pol(P(1),P(2),P(3));
@@ -47,6 +61,8 @@ assert(length(volume_outside)>3);
 % try
 % figure(2)
 % scatter3(volume_inside(:,1),volume_inside(:,2),volume_inside(:,3),'filled');
+% hold on
+% scatter3(volume_outside(:,1),volume_outside(:,2),volume_outside(:,3));
 % 
 % axis equal
 % hold on

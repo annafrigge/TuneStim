@@ -1,4 +1,5 @@
-function pat = assign_coupl_combos(pat)
+function pat = assign_coupl_combos(pat,cohort)
+
 
 if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202') || strcmp(pat.lead,'Abbott Infinity Directed (short)')
 % coupling combinations (H=Horizontal combination, V=Vertical combination)
@@ -12,15 +13,24 @@ if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202') || strcmp(pat.l
             'C4X_C3A';'C4X_C3B';'C4X_C3C';...
             'C2A_C3B';'C2A_C3C';'C2B_C3A';...
             'C2B_C3C';'C2C_C3A';'C2C_C3B'};
+    if strcmp(cohort.optischeme, 'MILP') | strcmp(cohort.optischeme, 'LP')
+        pat.coupl_combos = pat.coupl_combos(1:8);
+    end
 elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
     pat.coupl_combos = {'C1X'; 'C2X'; 'C3X'; 'C4X'; 'C5X';...
                  'C6X'; 'C7X'; 'C8X';...
                  'C1X_C2X'; 'C2X_C3X'; 'C3X_C4X'; 'C4X_C5X'; 'C5X_C6X';...
                  'C6X_C7X'; 'C7X_C8X'};
+    if strcmp(cohort.optischeme, 'MILP') | strcmp(cohort.optischeme, 'LP')
+        pat.coupl_combos = pat.coupl_combos(1:8);
+    end
 elseif strcmp(pat.lead,'Medtronic 3887')
     pat.coupl_combos = {'C1X'; 'C2X'; 'C3X'; 'C4X'; ...
                     'C1X_C2X'; 'C2X_C3X'; 'C3X_C4X';...
                      'C1X_C3X'; 'C1X_C4X'; 'C2X_C4X'};
+    if strcmp(cohort.optischeme, 'MILP') | strcmp(cohort.optischeme, 'LP')
+        pat.coupl_combos = pat.coupl_combos(1:4);
+    end
 end
 
 end

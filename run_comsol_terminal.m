@@ -22,16 +22,16 @@ import com.comsol.model.util.*
 
 if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
     disp('Loading Boston 2202 lead')
-    modelname = 'bostonsctf_simulationTerminal.mph';
+    modelname = 'BostonScientificVerciseDirected2202_simulationTerminal.mph';
 elseif strcmp(pat.lead,'Abbott Infinity Directed (short)')
     disp('Loading Stjude 1331 lead')
-    modelname = 'stjude1331_simulationTerminal.mph';
+    modelname = 'AbbottStJude1331_simulationTerminal.mph';
 elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
     disp('Loading Boston Scientific Vercise Standard 2201')
     modelname = 'bostonsctf_vercartesia_simulation.mph';
 elseif strcmp(pat.lead,'Medtronic 3887')
     disp('Loading Medtronic 3887')
-    modelname = 'medtronic3887_simulationTerminal.mph';
+    modelname = 'Medtronic3887_simulationTerminal.mph';
 end
 
 

@@ -1,4 +1,4 @@
-function distance_contacts_to_target(Vol_target,head,tail)
+function distance_contacts_to_target(pat,Vol_target,head,tail)
 % Inputs:
 % target_points: Coordinates of target structure
 % head and tail: lead coordinates
@@ -18,13 +18,18 @@ lead_vector = (tail-head)/norm(tail-head);
 % mid contact coordinates, when lowest contact row is placed at head
 % coordinates. Due to nonlinear warp from native to MNI pat.space, contact
 % positions in MNI pat.space to not necessarily match
-mid_contact_coord = [head; head+1.5e-3*lead_vector; head+3e-3*lead_vector; head+4.5e-3*lead_vector;];
-% scatter3(head(1),head(2),head(3),20,'filled','MarkerFaceColor','r')
-% hold on
-% scatter3(tail(1),tail(2),tail(3),20,'filled','MarkerFaceColor','b')
-% hold on
-% scatter3(mid_contact_coord(2:4,1),mid_contact_coord(2:4,2),mid_contact_coord(2:4,3),20,'filled','MarkerFaceColor','green')
-% hold on
+
+
+if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
+    mid_contact_coord = [head; head+2e-3*lead_vector; head+4e-3*lead_vector; head+6e-3*lead_vector;];
+elseif strcmp(pat.lead,'Abbott Infinity Directed (short)')
+    mid_contact_coord = [head; head+2e-3*lead_vector; head+4e-3*lead_vector; head+6e-3*lead_vector;];
+elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
+    mid_contact_coord = [head; head+2e-3*lead_vector; head+4e-3*lead_vector; head+6e-3*lead_vector;];
+elseif strcmp(pat.lead,'Medtronic 3887')
+    mid_contact_coord = [head; head+3e-3*lead_vector; head+6e-3*lead_vector; head+9e-3*lead_vector;];
+end
+
 
 dists = vecnorm(mid_contact_coord-centro,2,2);
 [min_dist, contact_row] = min(dists);

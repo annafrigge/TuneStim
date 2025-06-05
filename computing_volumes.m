@@ -1,5 +1,5 @@
 function [pAct,pSpill,VTA] = ...
-      computing_volumes(head,tail,VEFStjude,alpha,roi_lst,cohort)
+      computing_volumes(pat,head,tail,VEFStjude,roi_lst,cohort)
 % Compute coverage and spill of rois
 
 % Input Arguments
@@ -9,6 +9,7 @@ function [pAct,pSpill,VTA] = ...
 % VEFStjude : struct containing the comsol-model generated E-field for
 % different contacts (one active, rest grounded)
 % 
+alpha = pat.alpha;
 leadvector=(tail-head)/norm(head-tail);
 vlead0=[0,0,1];    
 r = vrrotvec(vlead0,leadvector);

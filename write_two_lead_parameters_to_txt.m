@@ -20,6 +20,5 @@ for i=1:length(hands)
     else
         fprintf(fileID,'%10s %9.7f\r\n',['orientation_',hands{i}],0);
     end
-
 end
 fclose(fileID);

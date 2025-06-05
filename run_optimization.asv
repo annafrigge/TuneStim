@@ -87,7 +87,7 @@ if strcmp(cohort.optischeme, 'MILP')
 
     % Set Gurobi parameters
     params.outputflag = 1;  % Display output
-    params.timelimit = 1500; % Set time limit [seconds]
+    params.timelimit = 1800; % Set time limit [seconds]
 
     % Solve the optimization problem
     result = gurobi(milpObj, params);
@@ -217,7 +217,7 @@ elseif strcmp(cohort.optischeme,'LP')
             cohort.LPrelaxed.x{pat.patientNo,rel} = LPresultR.x;
             % Linear programming Nuda, Nmde, Inconsistency
             NudaLP = sum(VqConstraint*LPresultR.x>cohort.CThreshold);
-            NmdaLP = sum(VqTarget*LPresultR.x<cohort.EThreshold);
+            NmdaLP = sum(VqTarget*LPresultR.x<Ethresh);
             cohort.LPrelaxed.Nuda{pat.patientNo,hand,rel} = NudaLP;
             cohort.LPrelaxed.Nmda{pat.patientNo,hand,rel} = NmdaLP;
             cohort.LPrelaxed.inconsistency{pat.patientNo,hand,rel} = 0.5*(NmdaLP/Non + NudaLP/Noff);

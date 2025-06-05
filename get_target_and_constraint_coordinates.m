@@ -25,7 +25,7 @@ for k = 1:numel(S)
         fnm = fullfile(path,S(k).name);
 
         if contains(S(k).name,'.nii')
-            name=append(S(k).name,'.gz');
+            name=S(k).name;%append(S(k).name,'.gz');
 
             volumeInfo=spm_vol(fnm);
             [intensityValues,xyzCoordinates ]=spm_read_vols(volumeInfo);

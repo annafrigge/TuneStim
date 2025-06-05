@@ -59,7 +59,7 @@ if strcmp(cohort.optischeme,'Linear')| strcmp(cohort.optischeme,'Nonlinear')
     relaxation = 0:10:90;
 elseif strcmp(cohort.optischeme,'mincov')
     relaxation = 10:10:90;
-elseif strcmp(cohort.optischeme, 'MILP') | strcmp(cohort.optischeme, 'LP')
+elseif strcmp(cohort.optischeme, 'MILP')
     relaxation = 1;
 end
 counter = 1;
@@ -84,7 +84,7 @@ for patient=1:length(cohort.patNames)
             'leaddbs', filesep, cohort.patNames{patient,:},filesep));
         pat.TuneSderivativesPath = [cohort.folder,filesep,'derivatives',filesep,'TuneS',filesep,...
             cohort.patNames{patient,:},filesep];
-        if strcmp(cohort.optischeme,'MILP') | strcmp(cohort.optischeme,'LP')
+        if strcmp(cohort.optischeme,'MILP')
             pat.outputPath = [pat.TuneSderivativesPath,'Suggestions',filesep,...
                 extractBefore(cohort.targets{1,1},'.'),filesep,...
                 cohort.optischeme,filesep,num2str(cohort.EThreshold),'-',num2str(cohort.CThreshold)];
@@ -250,7 +250,7 @@ for patient=1:length(cohort.patNames)
                 cou = eye(length(pat.contactNames));
                 [cohort, pat] = run_optimization(cohort,pat,VqTarget,VqConstraint,rel,cou,i);
 
-                if ~strcmp(cohort.optischeme,'MILP') && ~strcmp(cohort.optischeme,'LP')
+                if ~strcmp(cohort.optischeme,'MILP')
                     write_recommendations_to_file(cohort,pat,head,tail,pat.InitialSolution_cell,pat.Targets,pat.Constraints)
                 end
             end
@@ -305,7 +305,7 @@ for patient=1:length(cohort.patNames)
     end
 end
 if cohort.optimize==1
-    %
+    %msg = bestOption{:};
 end
 
 
