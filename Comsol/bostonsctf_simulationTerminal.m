@@ -123,7 +123,7 @@ model.component('comp1').geom('geom1').feature('sel9').selection('selection').se
 
 model.component('comp1').geom('geom1').create('sel10', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel10').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('fin', [5 7 8 11 12 13 17 18 19 21]);
+model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('fin', [13 17 20 28 33 35 51 54 67 68]);
 model.component('comp1').geom('geom1').feature('sel10').label('LeadNoContacts');
 
 model.component('comp1').geom('geom1').create('sel11', 'ExplicitSelection');

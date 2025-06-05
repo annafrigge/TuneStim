@@ -1,8 +1,8 @@
 function out = model
 %
-% medtronic3887_simulationTerminal.m
+% Medtronic3889_simulationTerminal.m
 %
-% Model exported on May 28 2025, 23:42 by COMSOL 6.3.0.290.
+% Model exported on May 28 2025, 23:54 by COMSOL 6.3.0.290.
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -373,6 +373,78 @@ model.result('pg2').run;
 model.result('pg2').run;
 model.result('pg2').feature('iso1').active(false);
 model.result('pg2').run;
+model.result('pg2').run;
+
+model.label('Medtronic3887_simulationTerminal.mph');
+
+model.result('pg2').run;
+
+model.component('comp1').geom('geom1').feature('imp1').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\Comsol\Leads\Medtronics3389_lead_no_encapsulation.mphbin');
+model.component('comp1').geom('geom1').run('imp1');
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').run('elp1');
+model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.5e-4+encapsulationThickness');
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.35e-4+encapsulationThickness');
+model.component('comp1').geom('geom1').run('cyl1');
+
+model.component('comp1').view('view1').hideObjects.clear;
+
+model.component('comp1').geom('geom1').run('elp1');
+model.component('comp1').geom('geom1').run('uni1');
+model.component('comp1').geom('geom1').run('rot1');
+model.component('comp1').geom('geom1').run('mov1');
+model.component('comp1').geom('geom1').run('fin');
+
+model.component('comp1').view('view1').hideObjects.clear;
+model.component('comp1').view('view1').hideObjects.create('hide1');
+model.component('comp1').view('view1').hideObjects('hide1').init(3);
+model.component('comp1').view('view1').hideObjects('hide1').add('fin', [1]);
+model.component('comp1').view('view1').hideObjects('hide1').add('fin', [2]);
+model.component('comp1').view('view1').hideObjects('hide1').add('fin', [3]);
+
+model.component('comp1').geom('geom1').runPre('sel_C2X');
+model.component('comp1').geom('geom1').runPre('sel_C3X');
+model.component('comp1').geom('geom1').runPre('sel_C4X');
+model.component('comp1').geom('geom1').runPre('sel9');
+model.component('comp1').geom('geom1').runPre('sel10');
+model.component('comp1').geom('geom1').runPre('sel11');
+model.component('comp1').geom('geom1').runPre('ige1');
+model.component('comp1').geom('geom1').runPre('cmd1');
+model.component('comp1').geom('geom1').run;
+
+model.component('comp1').physics('ec').feature('cucn3').selection.set([]);
+
+model.component('comp1').view('view1').hideObjects.clear;
+model.component('comp1').view('view1').hideEntities.clear;
+model.component('comp1').view('view1').hideEntities.create('hide1');
+model.component('comp1').view('view1').hideEntities('hide1').geom(3);
+model.component('comp1').view('view1').hideEntities('hide1').add([1]);
+model.component('comp1').view('view1').hideEntities('hide1').add([2]);
+
+model.component('comp1').physics('ec').feature('cucn3').selection.set([3]);
+
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([3]);
+
+model.component('comp1').view('view1').hideObjects.clear;
+model.component('comp1').view('view1').hideEntities.clear;
+
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 3]);
+
+model.component('comp1').view('view1').hideEntities.create('hide1');
+model.component('comp1').view('view1').hideEntities('hide1').geom(3);
+model.component('comp1').view('view1').hideEntities('hide1').add([1]);
+
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3]);
+
+model.component('comp1').view('view1').hideEntities('hide1').add([2]);
+
+model.component('comp1').mesh('mesh1').run;
+
+model.study('std1').createAutoSequences('all');
+
+model.sol('sol1').runAll;
+
 model.result('pg2').run;
 
 out = model;
