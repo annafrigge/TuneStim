@@ -507,11 +507,6 @@ model.result('pg2').run;
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0*2');
 model.component('comp1').physics('ec').feature('term1').selection.set([14]);
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
-model.component('comp1').physics('ec').feature.duplicate('term2', 'term1');
-model.component('comp1').physics('ec').feature('term2').selection.set([38]);
-model.component('comp1').physics('ec').feature('term2').set('I0', '0.5*I0');
-model.component('comp1').physics('ec').feature.duplicate('term3', 'term2');
-model.component('comp1').physics('ec').feature('term3').selection.set([67]);
 
 model.sol('sol1').runAll;
 
@@ -519,8 +514,7 @@ model.result('pg2').run;
 
 model.label('bostonsctf_simulationTerminal_v2.mph');
 
-model.result('pg2').run;
-model.result('pg2').run;
+
 model.result('pg2').run;
 
 model.param.set('encR', '1e-3');

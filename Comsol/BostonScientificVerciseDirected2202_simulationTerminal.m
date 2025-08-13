@@ -507,11 +507,11 @@ model.result('pg2').run;
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0*2');
 model.component('comp1').physics('ec').feature('term1').selection.set([14]);
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
-model.component('comp1').physics('ec').feature.duplicate('term2', 'term1');
-model.component('comp1').physics('ec').feature('term2').selection.set([38]);
-model.component('comp1').physics('ec').feature('term2').set('I0', '0.5*I0');
-model.component('comp1').physics('ec').feature.duplicate('term3', 'term2');
-model.component('comp1').physics('ec').feature('term3').selection.set([67]);
+%model.component('comp1').physics('ec').feature.duplicate('term2', 'term1');
+%model.component('comp1').physics('ec').feature('term2').selection.set([38]);
+%model.component('comp1').physics('ec').feature('term2').set('I0', '0.5*I0');
+%model.component('comp1').physics('ec').feature.duplicate('term3', 'term2');
+%model.component('comp1').physics('ec').feature('term3').selection.set([67]);
 
 model.sol('sol1').runAll;
 
@@ -764,5 +764,7 @@ model.study('std1').createAutoSequences('all');
 model.sol('sol1').runAll;
 
 model.result('pg2').run;
+
+mphsave('Comsol/BostonScientificVerciseDirected2202_simulationTerminal.mph')
 
 out = model;
