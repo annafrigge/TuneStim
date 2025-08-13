@@ -1,9 +1,10 @@
 clear all
-pat.path = 'C:\Users\annfr888\Documents\DBS\patient_data\OCD\Pat2\';
-pat.space = 'Native'; % Use patient MRI, 'native' for warping MNI-space 
+pat.path = 'C:\Users\annfr888\Documents\MATLAB\lead\templates\space\MNI_ICBM_2009b_NLIN_ASYM\'; %'C:\Users\annfr888\Documents\DBS\patient_data\OCD\Pat6\';
+pat.space = 'mni'; % 'Native' use patient MRI, 'native' for warping MNI-space 
                       % template to native space
 pat.lead = 'Medtronic';
 pat.TuneSderivativesPath = pat.path;
+pat.orientation = 0;
 
 segment_wt1_job(pat,1)
 
@@ -15,6 +16,10 @@ elseif strcmp(pat.space, 'Native') % Native patient T1 image
     GM = fullfile(pat.path,'c1raw_anat_t1.nii');
     WM = fullfile(pat.path,'c2raw_anat_t1.nii');
     CSF = fullfile(pat.path,'c3raw_anat_t1.nii');
+elseif strcmp(pat.space, 'mni')
+    GM = fullfile(pat.path,'c1t1.nii');
+    WM = fullfile(pat.path,'c2t1.nii');
+    CSF = fullfile(pat.path,'c3t1.nii');
 end
 
 % Grey matter
@@ -164,5 +169,5 @@ logical = permittivity_map(:,3)>= centre_coord(3)-box_length & permittivity_map(
 permittivity_map = permittivity_map(logical,:);
 
 permittivity_map(permittivity_map(:,:)==0) = 13.752*1e4;
-writematrix(conductivity_map,...
+writematrix(permittivity_map,...
            append(pat.path,'permittivity_map_both_hands_',pat.space,'.csv'))

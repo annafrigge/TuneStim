@@ -24,7 +24,7 @@ scores = wt*pAct_target*100-wc*pAct_constraint*100-ws*pSpill_target*100;
 [~,idx] = sort(scores, 'descend');
 
 % write results to .txt
-fid=fopen(append(pat.outputPath,filesep,'Suggestions_',pat.space,'_',pat.hand,'_',cohort.optischeme,'_',num2str(rel),'.txt'),'w+');
+fid=fopen(append(pat.outputPath,filesep,'Suggestions_',pat.space,'_',pat.hand,'_',cohort.optischeme,'_',num2str(pat.rel),'.txt'),'w+');
 fprintf(fid,'Contacts \t Target activation %s \t Constraint activation %s \t Spill %s \t Alpha \t VTA \t Score\n\n','%','%','%');
 
 a = cell(length(idx),7);
@@ -34,7 +34,7 @@ for j = 1:length(idx)
     a{j,2} = [9 num2str( round(pAct_target(in)*100,2))];
     a{j,3} = num2str( round(pAct_constraint(in)*100,2));
     a{j,4} = num2str( round(pSpill_target(in)*100,2));
-    a{j,5} = num2str( round(alpha(in),2) );
+    a{j,5} = num2str( round(pat.results.(cohort.optischeme).alpha(in),2));
     a{j,6} = num2str( round(VTA(in),2) );
     a{j,7} = num2str( round(scores(in),2));
 

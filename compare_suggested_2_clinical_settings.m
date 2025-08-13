@@ -5,7 +5,7 @@ if strcmp(hand,'sin')
 else
     i=2;
 end
-clinicalSettings = cohort.ClinicalSettings{1,i}.(pat.name);
+clinicalSettings = cohort.ClinicalSettings{1,i}.(erase(pat.name,'sub-'));
 leadvector=(tail-head)/norm(head-tail);
 vlead0=[0,0,1];
 r = vrrotvec(vlead0,leadvector);
@@ -13,19 +13,19 @@ R = vrrotvec2mat(r);
 dataEnorm = {cell(length(clinicalSettings(1)),1),cell(length(clinicalSettings(1)),1)};
 
 %load lead-specific model
-model = mphload(append(pat.path,'DBS_simulation.mph'));
+model = mphload(append(pat.TuneSderivativesPath,'DBS_simulation.mph'));
 EThresh = zeros(size(clinicalSettings,1),1);
 for j = 1:length(EThresh)
     EThresh(j) = pw_adjusted_EThresh(clinicalSettings{j,3});
 end
-if contains(cohort.targets{1,1},'tract')
-            load([pat.path,'atlases',filesep,cohort.atlas,filesep,'neurostructures.mat'])
+if contains(cohort.targets{1,1},'Tract')
+            %% use pat.Targets and pat.Constraints
             Targetfibs = concat_fibertracts(region,pat,cohort.targets,hand);
             Constraintfibs = concat_fibertracts(region,pat,cohort.constraints,hand);
 end
 
 
-     model.param.loadFile(append(pat.path,'lead_parameters_',...
+     model.param.loadFile(append(pat.TuneSderivativesPath,'lead_parameters_',...
         pat.space,'_',hand,'.txt'));
 
 
@@ -59,7 +59,7 @@ end
         dataEnorm{j} = mpheval(model,{'x','y','z','ec.normE'},'selection','geom1_sel11');
         dataEnormTarget{j} = mphinterp(model,'ec.normE','coord',Vol_target(:,1:3)');
         dataEnormConstraint{j} = mphinterp(model,'ec.normE','coord',Vol_constraint(:,1:3)');
-        if contains(cohort.targets{1,1},'tract')
+        if contains(cohort.targets{1,1},'Atract')
         dataEnormTargetFibs{j} = mphinterp(model,'ec.normE','coord',Targetfibs(:,1:3)','dataset','dset1');
         dataEnormConstraintFibs{j} = mphinterp(model,'ec.normE','coord',Constraintfibs(:,1:3)','dataset','dset1');
         end
@@ -68,8 +68,8 @@ end
         
     end
     if cohort.computeDice
-        mkdir(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'DiceScores'))
-        fid=fopen(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'DiceScores',filesep,'Dice_',pat.space,'_',hand,'.txt'),'w');
+        mkdir(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'DiceScores'))
+        fid=fopen(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'DiceScores',filesep,'Dice_',pat.space,'_',hand,'.txt'),'w');
         fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t cohort.EThreshold %s \t Dice VTA \t Dice Target \t Dice Constraint \n\n','[mA]','[us]','[V/m]');
 
         %fprintf('Dice Coefficients for %s : \n',hand)
@@ -93,10 +93,10 @@ end
     end
 
     if cohort.computeTargetCoverage
-        mkdir(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages'))
-        fid=fopen(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages',filesep,'Coverages_',pat.space,'_',hand,'_pointwise.txt'),'w');
+        mkdir(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages'))
+        fid=fopen(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'Coverages',filesep,'Coverages_',pat.space,'_',hand,'_pointwise.txt'),'w');
         fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t cohort.EThreshold %s \t  Target Coverage \t Spill \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
-        if contains(cohort.targets{1,1},'tract')% contains(cohort.targets{1,1},'tract')
+        if contains(cohort.targets{1,1},'Aract')% contains(cohort.targets{1,1},'tract')
             for j=1:size(clinicalSettings,1)
                 [afibs,pActTarget{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormTargetFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
@@ -106,7 +106,7 @@ end
                 [pActTarget{j},pActSpill{j},~] = volume_of_tissue_activated(dataEnorm{j},Vol_target,R,head,leadvector,EThresh(j));
             end
         end
-        if contains(cohort.constraints,'tract') % contains(cohort.targets{1,1},'tract')
+        if contains(cohort.constraints,'Aract') % contains(cohort.targets{1,1},'tract')
             for j=1:size(clinicalSettings,1)
                 [afibs,pActConstraint{j}] = get_fibers_covered_by_VTA(Targetfibs,dataEnormConstraintFibs{j},EThresh(j)); 
                 pActSpill{j} = NaN;
@@ -130,8 +130,8 @@ end
     end
 
         % 1) Open .txt file
-        mkdir(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages'))
-        fid=fopen(append(pat.path,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages',filesep,'alphaShapeCoverages_',pat.space,'_',hand,'.txt'),'w');
+        mkdir(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages'))
+        fid=fopen(append(pat.TuneSderivativesPath,'Suggestions',filesep,extractBefore(cohort.targets{1,1},'.'),filesep,'alphaShapeCoverages',filesep,'alphaShapeCoverages_',pat.space,'_',hand,'.txt'),'w');
         fprintf(fid,'Contacts \t Amplitude %s \t Pulse width %s \t EThreshold %s \t  VTA volume [mm^3] \t Target Coverage \t Constraint Coverage \n\n','[mA]','[us]','[V/m]');
 
         % 2) Compute alphaShape of Targets and Constraints

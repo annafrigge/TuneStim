@@ -21,20 +21,52 @@ else
         filesep,'atlases',filesep];
 end
 
-path = append(apath,cohort.atlas,filesep,hand,filesep);
+% path = append(apath,cohort.atlas,filesep,hand,filesep);
+% 
+% 
+% for t=1:length(cohort.targets)
+%     try gunzip(append(path,cohort.targets{t})); end
+%     cohort.targets{t} = erase(cohort.targets{t},'.gz');
+% end
+% 
+% for t=1:length(cohort.constraints)
+%     try gunzip(append(path,cohort.constraints{t})); end
+%     cohort.constraints{t} = erase(cohort.constraints{t},'.gz');
+% end
 
- 
-for t=1:length(cohort.targets)
-    try gunzip(append(path,cohort.targets{t})); end
-    cohort.targets{t} = erase(cohort.targets{t},'.gz');
+% Construct both hemisphere-specific and midline paths
+hand_path    = fullfile(apath, cohort.atlas, hand);
+midline_path = fullfile(apath, cohort.atlas, 'midline');
+
+% Combine file paths to search in both folders
+search_paths = {hand_path, midline_path};
+
+% Process targets
+for t = 1:length(cohort.targets)
+    fname = cohort.targets{t};
+    for p = 1:length(search_paths)
+        try
+            gunzip(fullfile(search_paths{p}, fname));
+        end
+    end
+    cohort.targets{t} = erase(fname, '.gz');
 end
 
-for t=1:length(cohort.constraints)
-    try gunzip(append(path,cohort.constraints{t})); end
-    cohort.constraints{t} = erase(cohort.constraints{t},'.gz');
+% Process constraints
+for t = 1:length(cohort.constraints)
+    fname = cohort.constraints{t};
+    for p = 1:length(search_paths)
+        try
+            gunzip(fullfile(search_paths{p}, fname));
+        end
+    end
+    cohort.constraints{t} = erase(fname, '.gz');
 end
 
-[target_lst,constraint_lst, atlas_struct] = get_target_and_constraint_coordinates(path, cohort.targets,cohort.constraints,hand,max,min);
+
+
+[target_lst,constraint_lst, atlas_struct] = get_target_and_constraint_coordinates(search_paths, cohort.targets,cohort.constraints,hand,max,min);
+
 
 
 % Sampling with given Voxel Filter size (default 0.95 mm)

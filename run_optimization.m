@@ -239,7 +239,8 @@ elseif strcmp(cohort.optischeme,'Nonlinear')
                               cohort.CThreshold,relaxation),options); 
     end
     pat.results.Nonlinear.alpha = alpha;
-    pat.resutls.Nonlinear.J = J;
+    pat.results.Nonlinear.J = J;
+    cohort.results.Nonlinear = pat.results.Nonlinear;
 elseif strcmp(cohort.optischeme,'Linear')
     % Relaxation percentage of points are allowed to exceed the threshold
     for m=1:length(alpha)
@@ -257,7 +258,8 @@ elseif strcmp(cohort.optischeme,'Linear')
         [alpha(m),J(m)] = linprog(f,A,b,[],[],lower_bound,upper_bound,options);
     end
     pat.results.Linear.alpha = alpha;
-    pat.resutls.Linear.J = J;
+    pat.results.Linear.J = J;
+    cohort.results.Linear = pat.results.Linear;
 
 elseif strcmp(cohort.optischeme,'mincov')
     for m=(1:length(alpha))
@@ -280,7 +282,8 @@ elseif strcmp(cohort.optischeme,'mincov')
         end
     end
     pat.results.mincov.alpha = alpha;
-    pat.resutls.mincov.J = J;
+    pat.results.mincov.J = J;
+    cohort.results.mincov = pat.results.mincov;
 end
 
 function J=fcost(alpha,EFnorm,EFobj)

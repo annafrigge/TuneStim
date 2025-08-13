@@ -98,7 +98,8 @@ for patient=1:length(cohort.patNames)
         mkdir(pat.outputPath)
     end
 
-    pat.orientation = [cohort.leadOrientations{patient,1}, cohort.leadOrientations{patient,2}];
+    pat.orientation.sin = cohort.leadOrientations{patient,1};
+    pat.orientation.dx = cohort.leadOrientations{patient,2}; % sin, dx
     hands = {"sin","dx"};
 
     pat.lead = cohort.leads{patient,1};
@@ -172,10 +173,11 @@ for patient=1:length(cohort.patNames)
 
 
     for i = 1:2
-        if isnan(pat.orientation(i))
+
+        pat.hand = hands{i};
+        if isnan(pat.orientation.(pat.hand))
             continue
         end
-        pat.hand = hands{i};
         head = pat.heads.(hands{i});
         tail = pat.tails.(hands{i});
 
@@ -220,8 +222,8 @@ for patient=1:length(cohort.patNames)
         end
 
         if cohort.optimize == 1
-            disp(['Computing closes distance to target centroid for Patient ', pat.path(end-3:end-1), ' ', convertStringsToChars(pat.hand)])
-            distance_contacts_to_target(pat,Vol_target,head,tail)
+            %disp(['Computing closes distance to target centroid for Patient ', pat.path(end-3:end-1), ' ', convertStringsToChars(pat.hand)])
+            %distance_contacts_to_target(pat,Vol_target,head,tail)
 
 
             fid = fopen(append(pat.outputPath,filesep,'Top_Suggestions_',pat.space,'_',convertStringsToChars(pat.hand),'_',cohort.optischeme,'_','.txt'),'w');
@@ -246,9 +248,9 @@ for patient=1:length(cohort.patNames)
 
             %% Optimization
             for k = 1:length(relaxation)
-                rel = relaxation(k);
+                pat.rel = relaxation(k);
                 cou = eye(length(pat.contactNames));
-                [cohort, pat] = run_optimization(cohort,pat,VqTarget,VqConstraint,rel,cou,i);
+                [cohort, pat] = run_optimization(cohort,pat,VqTarget,VqConstraint,pat.rel,cou,i);
 
                 if ~strcmp(cohort.optischeme,'MILP') && ~strcmp(cohort.optischeme,'LP')
                     write_recommendations_to_file(cohort,pat,head,tail,pat.InitialSolution_cell,pat.Targets,pat.Constraints)

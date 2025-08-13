@@ -18,7 +18,7 @@ if strcmp(pat.lead,'Abbott Infinity Directed (short)')
     % surface area of contacts S:t Jude short
     A_shell_tot = 5.9768E-6;
     A_shell_seg = 1.2453E-6;
-    pat.orientation = pat.orientation + 175;
+    %pat.orientation = pat.orientation + 175;
 elseif strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
     %surface ara of contacts Boston Scientific
     A_shell_tot = 6.0E-6;
@@ -63,7 +63,7 @@ for i=1:length(hands)
     
     % write parameters to .txt file
     write_lead_parameters_to_txt(pat, A_shell_tot,A_shell_seg,...
-                             h, t, axis,pat.orientation(side_nr),...
+                             h, t, axis,pat.orientation.(hands{i}),...
                              alpha,V0,I0,hands{i});
 
     head.(hands{i}) = h;

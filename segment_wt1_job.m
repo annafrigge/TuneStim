@@ -9,8 +9,10 @@ if strcmp(pat.space,'MNI')
     input_volume = 'glanat.nii';
 elseif strcmp(pat.space,'native')
     input_volume= 'wt1.nii'; % MNI space template MRI warped to native space
-else % Use patient MRI
+elseif strcmp(pat.space,'Native')% Use patient MRI
     input_volume= 'raw_anat_t1.nii';
+elseif strcmp(pat.space,'mni')
+    input_volume= 't1.nii';
 end
 SPM_dir = what('spm12').path;
 matlabbatch{1}.spm.spatial.preproc.channel.vols = {append(pat.path,input_volume,',1')};
@@ -55,9 +57,9 @@ matlabbatch{1}.spm.spatial.preproc.warp.bb = [NaN NaN NaN
 
 if (strcmp(pat.space,'native') && (~isfile(fullfile(pat.path,'c1wt1.nii'))|| ~isfile(fullfile(pat.path,'c2wt1.nii')) || ~isfile(fullfile(pat.path,'c3wt1.nii'))))
     cohort.rebuild = 1;
-end
-
-if (strcmp(pat.space,'Native') && (~isfile(fullfile(pat.path,'c1raw_anat_t1.nii'))|| ~isfile(fullfile(pat.path,'c2raw_anat_t1.nii')) || ~isfile(fullfile(pat.path,'c3raw_anat_t1.nii'))))
+elseif (strcmp(pat.space,'Native') && (~isfile(fullfile(pat.path,'c1raw_anat_t1.nii'))|| ~isfile(fullfile(pat.path,'c2raw_anat_t1.nii')) || ~isfile(fullfile(pat.path,'c3raw_anat_t1.nii'))))
+    cohort.rebuild = 1;
+elseif (strcmp(pat.space,'mni') && (~isfile(fullfile(pat.path,'c1t1.nii'))|| ~isfile(fullfile(pat.path,'c2t1.nii')) || ~isfile(fullfile(pat.path,'c3t1.nii'))))
     cohort.rebuild = 1;
 end
 

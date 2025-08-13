@@ -3,9 +3,9 @@ set(0,'defaulttextinterpreter','latex')
 set(0, 'DefaultAxesFontSize', 18);
 
 
-cohort_path = 'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study';
-pat_names = ['DBS_104';'DBS_128';'DBS_133';'DBS_139';'DBS_167';...
-    'DBS_168';'DBS_171';'DBS_185';'DBS_199';'DBS_204'];
+cohort_path = 'C:\Users\annfr888\Documents\DBS\patient_data\lead_v3\PipelineStudy';
+pat_names = ['DBS104';'DBS128';'DBS133';'DBS139';'DBS167';...
+    'DBS168';'DBS171';'DBS185';'DBS199';'DBS204'];
 cohort.leads = {'Abbott Infinity Directed (short)','Boston Scientific Vercise Directional 2202', 'Abbott Infinity Directed (short)',...
          'Abbott Infinity Directed (short)','Boston Scientific Vercise Directional 2202','Abbott Infinity Directed (short)'...
          'Boston Scientific Vercise Directional 2202','Abbott Infinity Directed (short)',...
@@ -14,10 +14,11 @@ orientations = {[293,314],[249,288],[12,302],[25,153],[98,193],[52,345],...
                [32,116],[202,184],16.4,[308,38]};
 
 amplitudes = {[3,2.85],[4.6,1.5],[3.4,4.6],[2.6,2],[1.7,2.6],[3.2,1.5],[1.2,3],[4.4,3.3],[3.8,0],[1,2.4]};
-cohort.optischeme ='Ruben';% 'conservative';%'mincov';%%
+cohort.optischeme = 'Nonlinear';%'mincov';%% 'Linear';%
 cohort.atlas = 'DISTAL Minimal (Ewert 2017)';
 cohort.targets = {'STN_motor.nii.gz'};
 cohort.constraints = {'STN_associative.nii.gz','STN_limbic.nii.gz'};
+target = 'STN_motor'; % 'STN_motor_tract'; %
 pat.space = 'MNI';
 cohort.EThreshold = 200;
 relaxation = 0:10:90;
@@ -25,7 +26,6 @@ relaxation = 0:10:90;
 
 %% Plotting
 hands = {'sin','dx'};
-cm = parula(10);
 CT = orderedcolors('gem12');
 Markers = {'+','o','*','x','v','d','^','s','>','<'};
 lineStyles = {'-', '--', ':', '-.', '-', '--', ':', '-.', '-', '--'};
@@ -38,13 +38,14 @@ for j=1:2
     end
     for i=1:length(pat_names)
         disp(append(pat_names(i,:),' ',hand))
-        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+        pat.path = append(cohort_path,filesep,'derivatives',filesep,...
+            'TuneS',filesep,'sub-',pat_names(i,:),filesep);
+        if strcmp(pat_names(i,:),'DBS199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
         end
         
-        fileName = append(pat.path,'Suggestions',filesep,'STN_motor_tract',...
+        fileName = append(pat.path,'Suggestions',filesep, target,...
             filesep,cohort.optischeme,filesep,'100',filesep,'S-1-1-0',...
             filesep,'Top_Suggestions_',pat.space,'_',...
             hand,'_',cohort.optischeme,'_','.txt');
@@ -90,13 +91,17 @@ ylabel('Score')
 %ylabel('Target Coverage [\%]')
 ylim([0,100])
 %ylim([0,50])
-title('\textbf{STN streamlines}')
+if strcmp(target,'STN_motor')
+    title('\textbf{STN Subdivisions}')
+elseif strcmp(target,'STN_motor_tract')
+    title('\textbf{STN streamlines}')
+end
 
 set(gca,'TickLabelInterpreter','latex')
 
 f = gcf;
 set(f, 'Position',  [100, 100, 950, 700])
-exportgraphics(f,[cohort_path,filesep,'RubenSTNStreamlinesRelaxationVsScore.png'],'Resolution',300)
+%exportgraphics(f,[cohort_path,filesep,'RubenSTNStreamlinesRelaxationVsScore.png'],'Resolution',300)
 
 %% Clinical Dice
 hands = {'sin','dx'};
@@ -115,10 +120,10 @@ for j=1:2
     for i=1:length(pat_names)
         s=s+1;
         pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+        if strcmp(pat_names(i,:),'DBS199') && strcmp(hand,'sin')
             continue
         end
-        fileName = append(pat.path,'Suggestions',filesep,'STN_motor',...
+        fileName = append(pat.path,'Suggestions',filesep, target,...
             filesep,'DiceScores',filesep,'Dice_',pat.space,'_',hand,'.txt');
         opts = detectImportOptions(fileName); % Initial detection
         opts.VariableNamesLine = 1; % Set variable names line
@@ -183,7 +188,7 @@ for j=1:2
     for i=1:length(pat_names)
         s=s+1;
         pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+        if strcmp(pat_names(i,:),'DBS199') && strcmp(hand,'sin')
             continue
         end
 
@@ -279,7 +284,7 @@ for j=1:2
     for i=1:length(pat_names)
         s=s+1;
         pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+        if strcmp(pat_names(i,:),'DBS199') && strcmp(hand,'sin')
             TargetPercents(i,j)= NaN;
             ConstraintPercents(i,j) = NaN;
             continue
@@ -397,13 +402,14 @@ for i=1:length(pat_names)
         end
 
         disp(append(pat_names(i,:),' ',hand))
-        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-        if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
+        pat.path = append(cohort_path,filesep,'derivatives',filesep,...
+            'TuneS',filesep,'sub-',pat_names(i,:),filesep);
+        if strcmp(pat_names(i,:),'DBS199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
         end
 
-        fileName = append(pat.path,'Suggestions',filesep,'STN_motor_tract',...
+            fileName = append(pat.path,'Suggestions',filesep,target,...
             filesep,cohort.optischeme,filesep,'100',filesep,'S-1-1-0',...
             filesep,'Top_Suggestions_',pat.space,'_',...
             hand,'_',cohort.optischeme,'_','.txt');
@@ -439,15 +445,20 @@ set(gca, 'XTick', xticks, 'XTickLabel', xticklabels);
 set(gca, 'YTick', yticks, 'YTickLabel', Contact_labels);
 %set(gca,'YTickLabel',[]);
 colorbar
-colormap(parula(10))
+%colormap(parula(10))
+colormap(sky(10))
 %clim([0 10]);
-title('\textbf{STN streamlines}')
+if strcmp(target,'STN_motor')
+    title('\textbf{STN Subdivisions}')
+elseif strcmp(target,'STN_motor_tract')
+    title('\textbf{STN streamlines}')
+end
 set(gca,'TickLabelInterpreter','latex')
 axis tight
 axis equal
 f = gcf;
 %set(f, 'Position',  [100, 100, 950, 700])
-exportgraphics(f,[cohort_path,filesep,'NonlinearSTNStreamlinesCount100.png'],'Resolution',300)
+%exportgraphics(f,[cohort_path,filesep,'NonlinearSTNStreamlinesCount100.png'],'Resolution',300)
 
 %% Extract Top suggested settings
 hands = {'sin','dx'};
@@ -463,7 +474,8 @@ for i=1:length(pat_names)
         end
 
         disp(append(pat_names(i,:),' ',hand))
-        pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
+        pat.path = append(cohort_path,filesep,'derivatives',filesep,...
+            'TuneS',filesep,'sub-',pat_names(i,:),filesep);
         if strcmp(pat_names(i,:),'DBS_199') && strcmp(hand,'sin')
             %hand = {"dx"};
             continue
