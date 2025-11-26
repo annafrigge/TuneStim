@@ -2,7 +2,7 @@ function out = model
 %
 % medtronic3887_simulationTerminal.m
 %
-% Model exported on May 28 2025, 23:42 by COMSOL 6.3.0.290.
+% Model exported on Nov 10 2025, 16:23 by COMSOL 6.3.0.290.
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -374,5 +374,12 @@ model.result('pg2').run;
 model.result('pg2').feature('iso1').active(false);
 model.result('pg2').run;
 model.result('pg2').run;
+
+model.label('Medtronic3887_simulationTerminal.mph');
+
+model.result('pg2').run;
+
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3]);
+model.component('comp1').mesh('mesh1').run;
 
 out = model;

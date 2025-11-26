@@ -1,63 +1,55 @@
 % Define patient cohort directory
 
-cohort_path = 'C:\Users\annfr888\Documents\DBS\patient_data\Pipeline_study';
+cohort.folder = 'C:\Users\annfr888\Documents\DBS\patient_data\lead_v3\PipelineStudy';
 
-% S = dir(cohort_path);
-% 
-% % Initialize an empty cell array to store folder names
-% pat_names = {};
-% 
-% % Loop through each item in the directory contents
-% for i = 1:length(S)
-%     % Check if the item is a directory and not '.' or '..'
-%     if S(i).isdir && ~strcmp(S(i).name, '.') && ~strcmp(S(i).name, '..')
-%         % Add the folder name to the cell array
-%         pat_names{end+1} = S(i).name;
-%     end
-% end
-pat_names = ['DBS_104';'DBS_128';'DBS_133';'DBS_139';'DBS_167';...
-             'DBS_168';'DBS_171';'DBS_185';'DBS_199';'DBS_204'];
-leads = {'Abbott Infinity Directed (short)','Boston Scientific Vercise Directional 2202', 'Abbott Infinity Directed (short)',...
-         'Abbott Infinity Directed (short)','Boston Scientific Vercise Directional 2202','Abbott Infinity Directed (short)'...
-         'Boston Scientific Vercise Directional 2202','Abbott Infinity Directed (short)',...
-         'Boston Scientific Vercise Directional 2202','Boston Scientific Vercise Directional 2202'};
-orientations = {[293,313],[94,288],[12,302],[25,153],[98,193],[52,345],...
-               [32,116],[202,184],16.4,[308,38]};
-atlas = 'DBS Tractography Atlas (Middlebrooks 2020)';%'DISTAL Minimal (Ewert 2017)'; %'Human Dysfunctome Atlas (Hollunder 2024)';%
+
+cohort.patNames = {'sub-DBS104';'sub-DBS128';'sub-DBS133';'sub-DBS139';'sub-DBS167';...
+             'sub-DBS168';'sub-DBS171';'sub-DBS185';'sub-DBS199';'sub-DBS204'};
+cohort.leads = {'Abbott Infinity Directed (short)';'Boston Scientific Vercise Directional 2202'; 'Abbott Infinity Directed (short)';...
+         'Abbott Infinity Directed (short)';'Boston Scientific Vercise Directional 2202';'Abbott Infinity Directed (short)';...
+         'Boston Scientific Vercise Directional 2202';'Abbott Infinity Directed (short)';...
+         'Boston Scientific Vercise Directional 2202';'Boston Scientific Vercise Directional 2202'};
+cohort.leadOrientations = {-55.7, 81.6; -111.4, -74.2; -170.5,-62.3; 19.4,157.6; 97.5,14.2; 72.7,21.2;...
+              -145.6,115.5; -157.7,-175.9; 14.4 NaN; -52,35.6};
+cohort.atlas = 'DBS Tractography Atlas (Middlebrooks 2020)';% 'DISTAL Minimal (Ewert 2017)'; %%'Human Dysfunctome Atlas (Hollunder 2024)';%
 cohort.targets = {'STN_motor_tract.mat'};%{'STN_motor.nii.gz'}; %{'Sweet_Streamline_PD.nii'};%
-cohort.constraints = {'STN_associative_tract.mat','STN_limbic_tract.mat'};%{'STN_associative.nii.gz','STN_limbic.nii.gz'};%
-cohort.optischeme = 'conservative';%'Ruben';% 'mincov';%
-cohort.EThreshold = 200;
-relaxation = 10:10:90;
-cohort.threads = 1;
-pat.space = 'MNI';
+cohort.constraints = {'STN_limbic_tract.mat','STN_associative_tract.mat'};%{'STN_limbic.nii','STN_associative.nii'};%
+
+cohort.threads = 0;
 cohort.plotoption = 0;
-cohort.rebuild = 0;
-scoretype = 'score2';
+cohort.rebuild = 1;
 
+cohort.simulationSettings.tractActivation = 'pointwise';%'fiberwise'; % 
+cohort.simulationSettings.includeAnisotropy = 0;
 
-%% Running optimization algorithm of choice for all patients
-for i=1:length(pat_names)
-    disp(append('Patient ',pat_names(i,:),' loading ...'))
-    pat.path = append(cohort_path,filesep,pat_names(i,:),filesep);
-    %if strcmp(leads{1,i},'Boston Scientific Vercise Directional 2202')
-    %    continue
-    %end
-    if strcmp(pat_names(i,:),'DBS_199')
-        hand = {"dx"};
-    else
-        hand = {"sin","dx"};
-        %hand = {"dx"};
-    end
-    lead = leads{1,i};
-    pat.orientation = orientations{1,i};
+cohort.omega = '1,1,0';
+cohort.optischeme = 'Linear'; % 'MILP';% 'Nonlinear'; % 'LP'; %
+cohort.simulationSettings.encapsulationThickness = 0.1*1e-3;
+cohort.simulationSettings.LeadDBSVersion = 3.1;
+cohort.EThreshold = 200;
+cohort.CThreshold = 100;
+cohort.space = 'MNI';
+cohort.unit = '1mA';
+cohort.compareSettings = 0;
+cohort.computeDice = 0;
+cohort.computeTargetCoverage = 0;
+cohort.optimize = 1;
+cohort.includeSpill = 0;
+cohort.simulationSettings.downsample = 1;
+cohort.simulationSettings.VoxelFilterSize = 0.95*1e-3;
 
-    main(pat.path,hand,lead,pat.orientation,atlas,cohort.targets,cohort.constraints,cohort.optischeme,cohort.EThreshold,relaxation,cohort.threads,pat.space,cohort.plotoption,scoretype,cohort.rebuild); 
+% Option 1
+cohort.simulationSettings.activationMetric = 'EF_norm';
 
-end
+% Option 2
+% cohort.simulationSettings.activationMetric = 'AF_from_E';
+% cohort.simulationSettings.fiberDirectionSource = 'from_fibers';
 
-%% Compute activation for clinical settings
+% Option 3
+% cohort.simulationSettings.activationMetric = 'AF_from_V';
+% cohort.simulationSettings.fiberDirectionSource = 'from_DTI';
 
-% 13852 interpolation points for STN motor, limbic, associative
+% Run! 
+main2(cohort)
 
 

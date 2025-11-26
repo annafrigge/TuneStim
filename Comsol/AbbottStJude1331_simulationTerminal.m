@@ -2,7 +2,7 @@ function out = model
 %
 % AbbottStJude1331_simulationTerminal.m
 %
-% Model exported on May 28 2025, 23:05 by COMSOL 6.3.0.290.
+% Model exported on Nov 10 2025, 16:35 by COMSOL 6.3.0.290.
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -14,6 +14,8 @@ model.modelPath('C:\Users\annfr888\Documents\DBS\code\TuneStim\Comsol');
 model.component.create('comp1', true);
 
 model.component('comp1').geom.create('geom1', 3);
+
+model.component('comp1').geom('geom1').geomRep('comsol');
 
 model.component('comp1').mesh.create('mesh1');
 
@@ -35,16 +37,50 @@ model.param.set('rot_axis_z', '0.0000000');
 model.param.set('rot_angle', '25.0');
 model.param.set('V0', '-1.0');
 model.param.set('I0', '-0.0010');
+model.param.set('encapsulationThickness', '0.2*1e-3');
+
 
 model.component('comp1').geom('geom1').create('imp1', 'Import');
 model.component('comp1').geom('geom1').feature('imp1').set('type', 'native');
-model.component('comp1').geom('geom1').feature('imp1').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\Comsol\Leads\StJude1331_lead_v5.mphbin');
+model.component('comp1').geom('geom1').feature('imp1').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\Comsol\Leads\StJude1331_lead_v5_no_encapsulation.mphbin');
 model.component('comp1').geom('geom1').feature('imp1').importData;
 model.component('comp1').geom('geom1').run('imp1');
+model.component('comp1').geom('geom1').create('cyl1', 'Cylinder');
+model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.35*1e-3+encapsulationThickness');
+model.component('comp1').geom('geom1').feature('cyl1').set('h', 0.10075);
+model.component('comp1').geom('geom1').run('cyl1');
+
+model.component('comp1').geom('geom1').create('elp1', 'Ellipsoid');
+model.component('comp1').geom('geom1').feature('elp1').set('semiaxes', {'6.35*1e-4+encapsulationThickness' '1' '1'});
+model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '6.35*1e-4+encapsulationThickness', 1);
+model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '0.0005', 2);
+model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '5e-4+encapsulationThickness', 2);
+model.component('comp1').geom('geom1').run('elp1');
+model.component('comp1').geom('geom1').create('uni1', 'Union');
+model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.35*1e-4+encapsulationThickness');
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('cyl1').set('pos', {'head_x' 'head_y' '0'});
+model.component('comp1').geom('geom1').feature('cyl1').setIndex('pos', 'head_z', 2);
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('cyl1').setIndex('pos', 0, 0);
+model.component('comp1').geom('geom1').feature('cyl1').set('pos', [0 0 0]);
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('imp1').importData;
+model.component('comp1').geom('geom1').feature('imp1').importData;
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('cyl1').set('pos', {'0' '0' '-0.75*1e-3'});
+model.component('comp1').geom('geom1').run('cyl1');
+model.component('comp1').geom('geom1').feature('elp1').set('pos', {'0' '0' '-0.75*1e-3'});
+model.component('comp1').geom('geom1').run('elp1');
+model.component('comp1').geom('geom1').feature('uni1').selection('input').set({'cyl1' 'elp1'});
+model.component('comp1').geom('geom1').feature('uni1').set('intbnd', false);
+model.component('comp1').geom('geom1').run('uni1');
+
+
 model.component('comp1').geom('geom1').create('rot1', 'Rotate');
-model.component('comp1').geom('geom1').feature.move('rot1', 1);
 model.component('comp1').geom('geom1').runPre('rot1');
-model.component('comp1').geom('geom1').feature('rot1').selection('input').set({'imp1'});
+model.component('comp1').geom('geom1').feature('rot1').selection('input').set({'imp1' 'uni1'});
 model.component('comp1').geom('geom1').feature('rot1').set('rot', 'orientation');
 model.component('comp1').geom('geom1').run('rot1');
 model.component('comp1').geom('geom1').create('blk1', 'Block');
@@ -78,47 +114,54 @@ model.component('comp1').geom('geom1').run('fin');
 model.component('comp1').geom('geom1').create('sel_C1X', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C1X').label('Contact 1');
 model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').set('fin', 16);
+model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').set('fin', 15);
 model.component('comp1').geom('geom1').create('sel_C2A', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C2A').label('Contact 2A');
 model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').set('fin', 41);
+model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').set('fin', 29);
 model.component('comp1').geom('geom1').create('sel_C2C', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C2C').label('Contact 2C');
 model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').set('fin', 75);
+model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').set('fin', 20);
 model.component('comp1').geom('geom1').create('sel_C2B', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C2B').label('Contact 2B');
 model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').set('fin', 23);
+model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').set('fin', 67);
 model.component('comp1').geom('geom1').create('sel_C3A', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C3A').label('Contact 3A');
 model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').set('fin', 58);
+model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').set('fin', 48);
 model.component('comp1').geom('geom1').create('sel_C3C', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C3C').label('Contact 3C');
 model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').set('fin', 86);
+model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').set('fin', 76);
 model.component('comp1').geom('geom1').create('sel_C3B', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C3B').label('Contact 3B');
 model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').set('fin', 32);
+model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').set('fin', 31);
 model.component('comp1').geom('geom1').create('sel_C4X', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel_C4X').label('Contact 4');
 model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').set('fin', 55);
+model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').set('fin', 50);
 model.component('comp1').geom('geom1').create('sel9', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel9').selection('selection').init(2);
 model.component('comp1').geom('geom1').feature('sel9').label('All Contacts');
-model.component('comp1').geom('geom1').feature('sel9').selection('selection').set('fin', [16 23 32 41 55 58 75 86]);
+model.component('comp1').geom('geom1').feature('sel9').selection('selection').set('fin', [15 20 29 31 48 50 67 76]);
 model.component('comp1').geom('geom1').create('sel10', 'ExplicitSelection');
 model.component('comp1').geom('geom1').feature('sel10').selection('selection').init(2);
-model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('fin', [17 18 20 21 25 28 30 36 39 40 45 49 51 57 61 63 71 72 76 79 85 87 90 91 92 93]);
+model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('fin', [16 18 22 25 33 40 44 58 63 73 77]);
 model.component('comp1').geom('geom1').feature('sel10').label('LeadNoContacts');
 model.component('comp1').geom('geom1').create('sel11', 'ExplicitSelection');
-model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('fin', [2 3 4 24]);
+model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('fin', [2 3]);
 model.component('comp1').geom('geom1').feature('sel11').label('InhomBox');
-model.component('comp1').geom('geom1').run;
+model.component('comp1').geom('geom1').run('sel11');
+model.component('comp1').geom('geom1').create('cmd1', 'CompositeDomains');
+model.component('comp1').geom('geom1').feature('cmd1').selection('input').set('fin', [3]);
+model.component('comp1').geom('geom1').create('ige1', 'IgnoreEdges');
+model.component('comp1').geom('geom1').feature('ige1').selection('input').set('cmd1', [17 18 19 20 36 37 38 42 43 44 45 91 99 100 101 104 105 106 107 108]);
+model.component('comp1').geom('geom1').run('ige1');
+model.component('comp1').geom('geom1').runAll;
+
 
 model.component('comp1').physics('ec').feature('cucn1').setIndex('minput_temperature_src', 'userdef', 0);
 model.component('comp1').physics('ec').feature('cucn1').set('sigma_mat', 'userdef');
@@ -135,11 +178,44 @@ model.func('int1').set('extrapvalue', 0.1);
 model.func('int1').set('argunit', 'm,m,m');
 model.func('int1').set('fununit', 'S/m');
 
-model.component('comp1').physics('ec').selection.set([1 2 3 4 24]);
+
+model.func.duplicate('int3', 'int1');
+model.func('int3').setEntry('funcnames', 'col4', 'sigma_xx');
+model.func('int3').discardData;
+model.func('int3').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_xx_map_full_mni.csv');
+model.func('int3').importData;
+model.func.duplicate('int4', 'int3');
+model.func('int4').setEntry('funcnames', 'col4', 'sigma_yy');
+model.func('int4').discardData;
+model.func('int4').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_yy_map_full_mni.csv');
+model.func('int4').importData;
+model.func.duplicate('int5', 'int4');
+model.func('int5').setEntry('funcnames', 'col4', 'sigma_zz');
+model.func('int5').discardData;
+model.func('int5').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_zz_map_full_mni.csv');
+model.func('int5').importData;
+model.func.duplicate('int6', 'int5');
+model.func('int6').setEntry('funcnames', 'col4', 'sigma_xy');
+model.func('int6').discardData;
+model.func('int6').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_xy_map_full_mni.csv');
+model.func('int6').importData;
+model.func.duplicate('int7', 'int6');
+model.func('int7').discardData;
+model.func('int7').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_xz_map_full_mni.csv');
+model.func('int7').importData;
+model.func('int7').setEntry('funcnames', 'col4', 'sigma_xz');
+model.func.duplicate('int8', 'int7');
+model.func('int8').setEntry('funcnames', 'col4', 'sigma_yz');
+model.func('int8').discardData;
+model.func('int8').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\MNI\sigma_yz_map_full_mni.csv');
+model.func('int8').importData;
+
+model.component('comp1').physics('ec').selection.set([1 2 3]);
 model.component('comp1').physics('ec').feature('cucn1').label('Bulk brain inhomogeneous');
-model.component('comp1').physics('ec').feature('cucn1').set('sigma', {'sigma_brain(root.x,root.y,root.z)' '0' '0' '0' 'sigma_brain(root.x,root.y,root.z)' '0' '0' '0' 'sigma_brain(root.x,root.y,root.z)'});
+model.component('comp1').physics('ec').feature('cucn1').set('sigma', {'sigma_xx(root.x,root.y,root.z)' 'sigma_xy(root.x,root.y,root.z)' 'sigma_xz(root.x,root.y,root.z)' 'sigma_xy(root.x,root.y,root.z)' 'sigma_yy(root.x,root.y,root.z)' 'sigma_yz(root.x,root.y,root.z)' 'sigma_xz(root.x,root.y,root.z)' 'sigma_yz(root.x,root.y,root.z)' 'sigma_zz(root.x,root.y,root.z)'});
 model.component('comp1').physics('ec').feature('cucn1').set('epsilonr_mat', 'userdef');
 model.component('comp1').physics('ec').feature('cucn1').set('epsilonr', [1380000 0 0 0 1380000 0 0 0 1380000]);
+
 model.component('comp1').physics('ec').create('cucn2', 'CurrentConservation', 3);
 model.component('comp1').physics('ec').feature('cucn2').label('Bulk brain homogeneous');
 model.component('comp1').physics('ec').feature('cucn2').selection.set([1]);
@@ -149,14 +225,14 @@ model.component('comp1').physics('ec').feature('cucn2').set('sigma_mat', 'userde
 model.component('comp1').physics('ec').feature('cucn2').set('sigma', [0.1 0 0 0 0.1 0 0 0 0.1]);
 model.component('comp1').physics('ec').create('cucn3', 'CurrentConservation', 3);
 model.component('comp1').physics('ec').feature('cucn3').label('Encapsulation');
-model.component('comp1').physics('ec').feature('cucn3').selection.set([3 4 24]);
+model.component('comp1').physics('ec').feature('cucn3').selection.set([3]);
 model.component('comp1').physics('ec').feature('cucn3').setIndex('minput_temperature_src', 'userdef', 0);
 model.component('comp1').physics('ec').feature('cucn3').set('sigma_mat', 'userdef');
 model.component('comp1').physics('ec').feature('cucn3').set('sigma', [0.18 0 0 0 0.18 0 0 0 0.18]);
 model.component('comp1').physics('ec').feature('cucn3').set('epsilonr_mat', 'userdef');
 model.component('comp1').physics('ec').feature('cucn3').set('epsilonr', [1380000 0 0 0 1380000 0 0 0 1380000]);
 model.component('comp1').physics('ec').create('gnd1', 'Ground', 2);
-model.component('comp1').physics('ec').feature('gnd1').selection.set([1 2 3 4 5 112]);
+model.component('comp1').physics('ec').feature('gnd1').selection.set([1 2 3 4 5 78]);
 model.component('comp1').physics('ec').feature('gnd1').label('Ground External');
 model.component('comp1').physics('ec').create('fp1', 'FloatingPotential', 2);
 model.component('comp1').physics('ec').feature('fp1').selection.named('geom1_sel9');
@@ -167,7 +243,14 @@ model.component('comp1').physics('ec').feature('gnd2').label('Ground Contacts');
 model.component('comp1').physics('ec').feature('gnd2').selection.named('geom1_sel9');
 model.component('comp1').physics('ec').feature('gnd2').active(false);
 
+model.component('comp1').physics('ec').create('term1', 'Terminal', 2);
+model.component('comp1').physics('ec').feature('fp1').active(true);
+model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
+model.component('comp1').physics('ec').feature('term1').selection.named('geom1_sel_C1X');
+
+
 model.component('comp1').mesh('mesh1').automatic(false);
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3 23]);
 model.component('comp1').mesh('mesh1').feature('size').set('custom', true);
 model.component('comp1').mesh('mesh1').feature('size').set('hmax', '0.0008');
 model.component('comp1').mesh('mesh1').feature('size').set('hmin', 1.4E-6);
@@ -175,12 +258,12 @@ model.component('comp1').mesh('mesh1').feature('size').set('hgrad', 1.3);
 model.component('comp1').mesh('mesh1').feature('size').set('hcurve', 0.2);
 model.component('comp1').mesh('mesh1').feature('size').set('hnarrow', 1);
 model.component('comp1').mesh('mesh1').feature('ftet1').create('size1', 'Size');
-model.component('comp1').mesh('mesh1').feature('ftet1').selection.all;
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([3 4 24]);
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').set('hauto', 2);
+model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([2,3]);
+model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').set('hauto', 1);
 model.component('comp1').mesh('mesh1').feature('ftet1').create('size2', 'Size');
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').set('hauto', 3);
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').selection.set([1 2]);
+model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').set('hauto', 4);
+model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').selection.set([1 23]);
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3 23]);
 model.component('comp1').mesh('mesh1').run;
 
 model.sol.create('sol1');
@@ -206,10 +289,13 @@ model.sol('sol1').feature('s1').feature('fc1').set('linsolver', 'i1');
 model.sol('sol1').feature('s1').feature.remove('fcDef');
 model.sol('sol1').attach('std1');
 
-model.component('comp1').physics('ec').create('term1', 'Terminal', 2);
-model.component('comp1').physics('ec').feature('fp1').active(true);
-model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
-model.component('comp1').physics('ec').feature('term1').selection.named('geom1_sel_C1X');
+
+model.result.dataset('dset1').set('frametype', 'mesh');
+
+
+model.label('AbbottStJude1331_simulationTerminal.mph');
+
+model.sol('sol1').runAll;
 
 model.result.create('pg2', 'PlotGroup3D');
 model.result('pg2').set('edges', false);
@@ -234,229 +320,9 @@ model.result('pg2').feature('iso1').set('coloring', 'uniform');
 model.result('pg2').feature('iso1').set('color', 'cyan');
 model.result('pg2').set('showhiddenobjects', true);
 model.result('pg2').feature('iso1').set('data', 'dset1');
-model.result('pg2').run;
-model.result.dataset('dset1').set('frametype', 'mesh');
-
-model.sol('sol1').runAll;
-
-model.label('stjude1331_simulationTerminal.mph');
-model.label('stjude1331_simulationTerminal.mph');
-
-model.component('comp1').geom('geom1').feature('imp1').set('filename', 'C:\Users\annfr888\Documents\DBS\code\TuneStim\Comsol\Leads\StJude1331_lead_v5_no_encapsulation.mphbin');
-model.component('comp1').geom('geom1').run('imp1');
-model.component('comp1').geom('geom1').create('cyl1', 'Cylinder');
-model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.35*1e-3+encapsulationThickness');
-model.component('comp1').geom('geom1').feature('cyl1').set('h', 0.0885);
-
-model.param.set('encapsulationThickness', '0.1*1e-3');
-
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').create('elp1', 'Ellipsoid');
-model.component('comp1').geom('geom1').feature('elp1').set('semiaxes', {'6.35*1e-4+encapsulationThickness' '1' '1'});
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '6.35*1e-4+encapsulationThickness', 1);
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '0.0005', 2);
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '5e-4+encapsulationThickness', 2);
-model.component('comp1').geom('geom1').run('elp1');
-model.component('comp1').geom('geom1').create('uni1', 'Union');
-model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.35*1e-4+encapsulationThickness');
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').feature('cyl1').set('pos', {'head_x' 'head_y' '0'});
-model.component('comp1').geom('geom1').feature('cyl1').setIndex('pos', 'head_z', 2);
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').feature('cyl1').setIndex('pos', 0, 0);
-model.component('comp1').geom('geom1').feature('cyl1').set('pos', [0 0 0]);
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').feature('imp1').importData;
-model.component('comp1').geom('geom1').feature('imp1').importData;
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').feature('cyl1').set('pos', {'0' '0' '-0.75*1e-3'});
-model.component('comp1').geom('geom1').run('cyl1');
-model.component('comp1').geom('geom1').feature('elp1').set('pos', {'0' '0' '-0.75*1e-3'});
-model.component('comp1').geom('geom1').run('elp1');
-model.component('comp1').geom('geom1').feature('uni1').selection('input').set({'cyl1' 'elp1'});
-model.component('comp1').geom('geom1').feature('uni1').set('intbnd', false);
-model.component('comp1').geom('geom1').run('uni1');
-
-model.component('comp1').view('view1').set('transparency', false);
-
-model.component('comp1').geom('geom1').feature('rot1').selection('input').set({'imp1' 'uni1'});
-model.component('comp1').geom('geom1').run('rot1');
-model.component('comp1').geom('geom1').run('blk1');
-model.component('comp1').geom('geom1').run('blk2');
-model.component('comp1').geom('geom1').run('mov1');
-model.component('comp1').geom('geom1').run('rot2');
-model.component('comp1').geom('geom1').run('fin');
-
-model.component('comp1').view('view1').hideObjects.create('hide1');
-model.component('comp1').view('view1').hideObjects('hide1').init(3);
-model.component('comp1').view('view1').hideObjects('hide1').add('fin', [1]);
-model.component('comp1').view('view1').hideObjects('hide1').add('fin', [2]);
-
-model.component('comp1').geom('geom1').create('cmd1', 'CompositeDomains');
-model.component('comp1').geom('geom1').feature('cmd1').selection('input').set('fin', [3 23]);
-model.component('comp1').geom('geom1').run('sel11');
-model.component('comp1').geom('geom1').create('ige1', 'IgnoreEdges');
-model.component('comp1').geom('geom1').feature('ige1').selection('input').set('cmd1', [17 18 19 20 33 34 35 45 46 47 48 88 99 100 101 103 104 106 107 108]);
-model.component('comp1').geom('geom1').run('ige1');
-
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [3]);
-
-model.component('comp1').geom('geom1').runPre('sel_C1X');
-model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').set('cmd1', 15);
-model.component('comp1').geom('geom1').runPre('sel_C2A');
-model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').set('cmd1', 35);
-model.component('comp1').geom('geom1').runPre('sel_C2C');
-model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').set('cmd1', 65);
-model.component('comp1').geom('geom1').runPre('sel_C2B');
-model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').set('cmd1', 20);
-model.component('comp1').geom('geom1').runPre('sel_C3A');
-model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').set('cmd1', 50);
-model.component('comp1').geom('geom1').runPre('sel_C3C');
-model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').set('cmd1', 74);
-model.component('comp1').geom('geom1').runPre('sel_C3B');
-model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').set('cmd1', 28);
-model.component('comp1').geom('geom1').runPre('sel_C4X');
-model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').set('cmd1', 48);
-model.component('comp1').geom('geom1').runPre('sel9');
-model.component('comp1').geom('geom1').feature('sel9').selection('selection').set('cmd1', [15 20 28 35 48 50 65 74]);
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideObjects.create('hide1');
-model.component('comp1').view('view1').hideObjects('hide1').init(3);
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [1]);
-
-model.component('comp1').geom('geom1').runPre('sel11');
-model.component('comp1').geom('geom1').feature('sel11').selection('selection').clear('cmd1');
-model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('cmd1', 2);
-
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [2]);
-
-model.component('comp1').geom('geom1').feature('sel11').selection('selection').set('cmd1', [2 3]);
-model.component('comp1').geom('geom1').run('ige1');
-model.component('comp1').geom('geom1').feature.create('rmd1', 'RemoveDetails');
-model.component('comp1').geom('geom1').feature('rmd1').set('detailsizetype', 'absolute');
-model.component('comp1').geom('geom1').feature('rmd1').set('maxabssize', '1.6E-4');
-model.component('comp1').geom('geom1').run('rmd1');
-model.component('comp1').geom('geom1').feature.remove('rmd1');
-
-model.component('comp1').physics('ec').selection.set([]);
-
-model.component('comp1').view('view1').set('hidestatus', 'showonlyhidden');
-
-model.component('comp1').physics('ec').selection.set([1]);
-
-model.component('comp1').view('view1').set('hidestatus', 'hide');
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-
-model.component('comp1').physics('ec').selection.set([1 2]);
-
-model.component('comp1').view('view1').hideEntities('hide1').add([2]);
-
-model.component('comp1').physics('ec').selection.set([1 2 3]);
-model.component('comp1').physics('ec').feature('cucn3').selection.set([3]);
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-model.component('comp1').view('view1').hideEntities('hide1').add([2]);
-model.component('comp1').view('view1').hideEntities('hide1').add([3]);
-
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([]);
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').selection.set([1]);
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').set('hauto', 1);
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([2]);
-
-model.component('comp1').view('view1').hideEntities('hide1').add([2]);
-
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([2 3]);
-
-model.component('comp1').view('view1').hideEntities('hide1').add([3]);
-
-model.component('comp1').mesh('mesh1').run;
-
-model.study('std1').createAutoSequences('all');
-
-model.sol('sol1').runAll;
+%model.result('pg2').feature('iso1').active(false);
 
 model.result('pg2').run;
-model.result('pg2').run;
 
-model.component('comp1').geom('geom1').runPre('sel10');
-
-model.component('comp1').view('view1').hideObjects.create('hide1');
-model.component('comp1').view('view1').hideObjects('hide1').init(3);
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [1]);
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [2]);
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [3]);
-
-model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('cmd1', [16 18 22 25 32 39 43 54 62 73 77]);
-model.component('comp1').geom('geom1').feature('imp1').importData;
-model.component('comp1').geom('geom1').run('ige1');
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideObjects.create('hide1');
-model.component('comp1').view('view1').hideObjects('hide1').init(3);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [1]);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [2]);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [3]);
-
-model.component('comp1').geom('geom1').feature('imp1').importData;
-
-model.component('comp1').view('view1').hideObjects.clear;
-
-model.component('comp1').geom('geom1').run('ige1');
-
-model.component('comp1').view('view1').hideObjects.create('hide1');
-model.component('comp1').view('view1').hideObjects('hide1').init(3);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [1]);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [2]);
-model.component('comp1').view('view1').hideObjects('hide1').add('ige1', [3]);
-
-model.component('comp1').geom('geom1').runPre('sel_C1X');
-model.component('comp1').geom('geom1').feature('sel_C1X').selection('selection').set('cmd1', 15);
-model.component('comp1').geom('geom1').runPre('sel_C2A');
-model.component('comp1').geom('geom1').feature('sel_C2A').selection('selection').set('cmd1', 29);
-model.component('comp1').geom('geom1').runPre('sel_C2C');
-model.component('comp1').geom('geom1').feature('sel_C2C').selection('selection').set('cmd1', 20);
-model.component('comp1').geom('geom1').runPre('sel_C2B');
-model.component('comp1').geom('geom1').feature('sel_C2B').selection('selection').set('cmd1', 67);
-model.component('comp1').geom('geom1').runPre('sel_C3A');
-model.component('comp1').geom('geom1').feature('sel_C3A').selection('selection').set('cmd1', 48);
-model.component('comp1').geom('geom1').runPre('sel_C3B');
-model.component('comp1').geom('geom1').feature('sel_C3B').selection('selection').set('cmd1', 76);
-model.component('comp1').geom('geom1').feature('sel_C3C').selection('selection').set('cmd1', 31);
-model.component('comp1').geom('geom1').run('sel_C3B');
-model.component('comp1').geom('geom1').run('sel_C4X');
-model.component('comp1').geom('geom1').feature('sel_C4X').selection('selection').set('cmd1', 50);
-model.component('comp1').geom('geom1').run('sel_C4X');
-model.component('comp1').geom('geom1').feature('sel9').selection('selection').set('cmd1', [15 20 29 31 48 50 67 76]);
-model.component('comp1').geom('geom1').runPre('sel10');
-model.component('comp1').geom('geom1').feature('sel10').selection('selection').set('cmd1', [16 18 22 25 33 40 44 58 63 73 77]);
-model.component('comp1').geom('geom1').run('ige1');
-
-model.component('comp1').mesh('mesh1').run;
-
-model.study('std1').createAutoSequences('all');
-
-model.sol('sol1').runAll;
-
-model.result('pg2').run;
-model.result('pg2').run;
-model.result('pg2').feature('iso1').active(false);
-model.result('pg2').run;
-
+mphsave('Abbott1331_simulationTerminalAnisotropy.mph')
 out = model;

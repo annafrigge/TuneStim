@@ -22,10 +22,10 @@ import com.comsol.model.util.*
 
 if strcmp(pat.lead,'Boston Scientific Vercise Directional 2202')
     disp('Loading Boston 2202 lead')
-    modelname = 'BostonScientificVerciseDirected2202_simulationTerminal.mph';
+    modelname = 'BostonScientificVerciseDirected2202_simulationTerminalAnisotropy.mph';
 elseif strcmp(pat.lead,'Abbott Infinity Directed (short)')
     disp('Loading Stjude 1331 lead')
-    modelname = 'AbbottStJude1331_simulationTerminal.mph';
+    modelname = 'Abbott1331_simulationTerminalAnisotropy.mph';
 elseif strcmp(pat.lead,'Boston Scientific Vercise Standard 2201')
     disp('Loading Boston Scientific Vercise Standard 2201')
     modelname = 'bostonsctf_vercartesia_simulation.mph';
@@ -48,35 +48,34 @@ lead_path = append(pat.TuneSderivativesPath,'lead_parameters_',pat.space,...
                             '_',pat.hand,'.txt');
 model.param.loadFile(lead_path);
 
-model.component('comp1').geom('geom1').run('fin');
+model.component('comp1').geom('geom1').runAll;
 
 
-% loading conductivity map 
-model.func.remove('int1');
-model.func.create('int1', 'Interpolation');
-model.func('int1').set('source', 'file');
-if strcmp(pat.space,'native')
-    model.func('int1').set('filename', append(pat.TuneSderivativesPath,'conductivity_map_',pat.hand,'_native.csv'));
+if pat.includeAnisotropy
+    disp('WARNING: Anisotropy only supported for MNI space for now. Using diffusion tensor derived from IIT Human Brain atlas.')
+    model.component('comp1').physics('ec').feature('cucn1').set('sigma', {'sigma_xx(root.x,root.y,root.z)' 'sigma_xy(root.x,root.y,root.z)' 'sigma_xz(root.x,root.y,root.z)' 'sigma_xy(root.x,root.y,root.z)' 'sigma_yy(root.x,root.y,root.z)' 'sigma_yz(root.x,root.y,root.z)' 'sigma_xz(root.x,root.y,root.z)' 'sigma_yz(root.x,root.y,root.z)' 'sigma_zz(root.x,root.y,root.z)'});
 else
-    model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',pat.hand,'_MNI.csv'));
+    % loading conductivity map
+    model.func.remove('int1');
+    model.func.create('int1', 'Interpolation');
+    model.func('int1').set('source', 'file');
+    if strcmp(pat.space,'native')
+        model.func('int1').set('filename', append(pat.TuneSderivativesPath,'conductivity_map_',pat.hand,'_native.csv'));
+        model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
+        model.func('int1').importData;
+    else
+        model.func('int1').set('filename', append(pwd,filesep,'MNI',filesep,'conductivity_map_',pat.hand,'_MNI.csv'));
+        model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
+        model.func('int1').importData;
+    end
+
+    model.func('int1').set('interp', 'neighbor');
+    model.func('int1').set('extrap', 'value');
+    model.func('int1').set('extrapvalue', 0.1);
+    model.func('int1').set('argunit', 'm,m,m');
+    model.func('int1').set('fununit', 'S/m');
+    model.component('comp1').physics('ec').feature('cucn1').set('sigma', {'sigma_brain(root.x,root.y,root.z)' '0' '0' '0' 'sigma_brain(root.x,root.y,root.z)' '0' '0' '0' 'sigma_brain(root.x,root.y,root.z)'});
 end
-model.func('int1').setIndex('funcs', 'sigma_brain', 0, 0);
-model.func('int1').importData;
-model.func('int1').set('interp', 'neighbor');
-model.func('int1').set('extrap', 'value');
-model.func('int1').set('extrapvalue', 0.1);
-model.func('int1').set('argunit', 'm,m,m');
-model.func('int1').set('fununit', 'S/m');
-
-
-
-%model.sol('sol1').runAll;
-
-% create export of coupling constants
-%model.result.export.create('tbl1', 'Table');
-%model.result.export('tbl1').set('table', 'tbl1');
-%model.result.export('tbl1').set('header', false);
-%model.result.export('tbl1').label('Coupling Constants');
 
 
 model.result.export.create('data1', 'Data');
@@ -86,7 +85,6 @@ model.result.export('data1').setIndex('expr', 'ec.Ex', 1);
 model.result.export('data1').setIndex('expr', 'ec.Ey', 2);
 model.result.export('data1').setIndex('expr', 'ec.Ez', 3);
 model.result.export('data1').setIndex('expr', 'ec.normE', 4);
-%model.result.export('data1').set('data', 'dset2');
 
 EfieldFrame = 'mesh'; % or 'grid'
 if strcmp(EfieldFrame,'grid')
@@ -120,7 +118,13 @@ elseif strcmp(pat.unit, '1V')
 end
 
 % creating output directory
-mkdir(append(pat.TuneSderivativesPath,'EFdistribution_',pat.hand,'_',pat.unit));
+if strcmp(pat.activationMetric, 'AF_from_V')
+    mkdir(append(pat.TuneSderivativesPath,'ddVdistribution_',pat.hand,'_',pat.unit));
+else
+    mkdir(append(pat.TuneSderivativesPath,'EFdistribution_',pat.hand,'_',pat.unit));
+end
+
+
 
 % deactive grounding on contacts
 model.component('comp1').physics('ec').feature('gnd2').active(false); % true for grounded contacts, false for floating contacts
@@ -394,19 +398,34 @@ function EF_for_config(i,name,pat,EfieldFrame)
     model.sol('sol1').runAll;
 
     if strcmp(EfieldFrame,'mesh')
-        %dataV = mpheval(model,'V','selection','geom1_sel11','edim',0); % geom1_sel11 corresponds to inhomogeneous box + encapsulation
-        %dataEx = mpheval(model,'ec.Ex','selection','geom1_sel11','edim',0);
-        %dataEy = mpheval(model,'ec.Ey','selection','geom1_sel11');
-        %dataEz = mpheval(model,'ec.Ez','selection','geom1_sel11');
-        %dataEnorm = mpheval(model,'ec.normE','selection','geom1_sel11');
-        dataMesh = mpheval(model,{'V','ec.Ex','ec.Ey','ec.Ez','ec.normE'},'selection','geom1_sel11');
+        if strcmp(pat.activationMetric, 'AF_from_V')
+            dataMesh = mpheval(model,{'V','Vxx','Vyy','Vzz','Vxy','Vxz','Vyz'},'selection','geom1_sel11');
+            data = [dataMesh.p',dataMesh.d1',dataMesh.d2',dataMesh.d3',dataMesh.d4',dataMesh.d5',dataMesh.d6',dataMesh.d7']; %
+            %data = [dataEnorm.p',zeros(size(dataEx.d1))',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
+            if ~pat.includeAnisotropy
+                writematrix(data,append(pat.TuneSderivativesPath,...
+                    'ddVdistribution_',pat.hand,'_',pat.unit,filesep,'V_dd_cont_',pat.coupl_combos{i,:},'_', ...
+                    pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+            else
+                writematrix(data,append(pat.TuneSderivativesPath,...
+                    'ddVdistribution_anisotropic',pat.hand,'_',pat.unit,filesep,'V_dd_cont_',pat.coupl_combos{i,:},'_', ...
+                    pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+            end
+        else
+            dataMesh = mpheval(model,{'V','ec.Ex','ec.Ey','ec.Ez','ec.normE'},'selection','geom1_sel11');
+            data = [dataMesh.p',dataMesh.d1',dataMesh.d2',dataMesh.d3',dataMesh.d4',dataMesh.d5']; %
+            %data = [dataEnorm.p',zeros(size(dataEx.d1))',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
 
-        data = [dataMesh.p',dataMesh.d1',dataMesh.d2',dataMesh.d3',dataMesh.d4',dataMesh.d5']; % 
-        %data = [dataEnorm.p',zeros(size(dataEx.d1))',dataEx.d1',dataEy.d1',dataEz.d1',dataEnorm.d1'];
-        writematrix(data,append(pat.TuneSderivativesPath,...
-            'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
-           pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
-
+            if ~pat.includeAnisotropy
+                writematrix(data,append(pat.TuneSderivativesPath,...
+                    'EFdistribution_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
+                    pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+            else
+                writematrix(data,append(pat.TuneSderivativesPath,...
+                    'EFdistribution_anisotropic_',pat.hand,'_',pat.unit,filesep,'V_EF_cont_',pat.coupl_combos{i,:},'_', ...
+                    pat.hand,'_',pat.unit,'_gnd.csv'),'Delimiter',',');
+            end
+        end
     elseif strcmp(EfieldFrame,'grid')
         % export coupling constants
         model.result.dataset('dset1').set('frametype', 'mesh');

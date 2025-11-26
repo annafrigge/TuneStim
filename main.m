@@ -42,17 +42,14 @@ function msg = main(cohort)
 % best_suggestion   :   (cell) containing the optimal stimulation settings
 %  for each lead side defined in hand
 %
-% ToDo:
-% 1. Include all other leads
-% 2. Boston Scientific Vercise Standard 2201 -- Terminal!
-% 3. Lead DBS version 3.1 support
-% 4. Include tests and error messages!
 
 tic
 settings;
 warning('off','MATLAB:dispatcher:nameConflict')
 
-
+% Incorporate in GUI:
+cohort.simulationSettings.tractActivation = 'pointwise';%'fiberwise'; % 
+%cohort.simulationSettings.includeAnisotropy = 0;
 
 cohort.omega = str2num(replace(cohort.omega,'-',' '));
 if strcmp(cohort.optischeme,'Linear')| strcmp(cohort.optischeme,'Nonlinear')
@@ -63,7 +60,7 @@ elseif strcmp(cohort.optischeme, 'MILP') | strcmp(cohort.optischeme, 'LP')
     relaxation = 1;
 end
 counter = 1;
-for patient=1:length(cohort.patNames)
+for patient=1%:length(cohort.patNames)
     disp(append('Patient ',cohort.patNames{patient,:},' loading ...'))
     pat.patientNo = patient;
     pat.encapsulationThickness = cohort.simulationSettings.encapsulationThickness;
@@ -84,20 +81,35 @@ for patient=1:length(cohort.patNames)
             'leaddbs', filesep, cohort.patNames{patient,:},filesep));
         pat.TuneSderivativesPath = [cohort.folder,filesep,'derivatives',filesep,'TuneS',filesep,...
             cohort.patNames{patient,:},filesep];
+        % Collect all targets into one string, remove extensions
+        allTargets = cellfun(@(x) extractBefore(x, '.'), cohort.targets(1,:), 'UniformOutput', false);
+        targetsStr = strjoin(allTargets, '_');
+
+        % Collect all constraints into one string
+        allConstraints = cellfun(@(x) extractBefore(x, '.'),cohort.constraints(1,:), 'UniformOutput', false);
+        constraintsStr = strjoin(allConstraints, '_');
+
         if strcmp(cohort.optischeme,'MILP') | strcmp(cohort.optischeme,'LP')
             pat.outputPath = [pat.TuneSderivativesPath,'Suggestions',filesep,...
                 extractBefore(cohort.targets{1,1},'.'),filesep,...
                 cohort.optischeme,filesep,num2str(cohort.EThreshold),'-',num2str(cohort.CThreshold)];
         else
+
+            % Build output path
             pat.outputPath = [pat.TuneSderivativesPath,'Suggestions',filesep,...
-                extractBefore(cohort.targets{1,1},'.'),filesep,...
+                targetsStr,'__',constraintsStr,filesep,...
                 cohort.optischeme,filesep,num2str(cohort.CThreshold),...
                 filesep,'S-',num2str(cohort.omega(1)),'-',...
                 num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
+            % pat.outputPath = [pat.TuneSderivativesPath,'Suggestions',filesep,...
+            %     extractBefore(cohort.targets{1,1},'.'),filesep,...
+            %     cohort.optischeme,filesep,num2str(cohort.CThreshold),...
+            %     filesep,'S-',num2str(cohort.omega(1)),'-',...
+            %     num2str(cohort.omega(2)),'-',num2str(cohort.omega(3))];
         end
         mkdir(pat.outputPath)
     end
-
+    
     pat.orientation.sin = cohort.leadOrientations{patient,1};
     pat.orientation.dx = cohort.leadOrientations{patient,2}; % sin, dx
     hands = {"sin","dx"};
@@ -105,6 +117,7 @@ for patient=1:length(cohort.patNames)
     pat.lead = cohort.leads{patient,1};
     pat.space = cohort.space;
     pat.unit = cohort.unit;
+    pat.includeAnisotropy = cohort.simulationSettings.includeAnisotropy;
     pat = assign_coupl_combos(pat,cohort);
 
 
@@ -199,15 +212,17 @@ for patient=1:length(cohort.patNames)
         pat.contactNames = fieldnames(InitialSolution);
 
         % Get maximum coordinate point in ROI
-        maxPoint = max(InitialSolution.(pat.contactNames{1})(:,1:3));
-        minPoint = min(InitialSolution.(pat.contactNames{1})(:,1:3));
+        pat.maxPoint = max(InitialSolution.(pat.contactNames{1})(:,1:3));
+        pat.minPoint = min(InitialSolution.(pat.contactNames{1})(:,1:3));
 
-        %% load target and constraint and  consider only target points within max and min range
-        pat = load_atlas_roi(pat,cohort,maxPoint,minPoint,head);
+        %% load target and constraint, apply voxelfilter and consider only target points within max and min range
+        pat = load_atlas_roi(pat,cohort);
 
         %% Remove points of target/constraint volumes that lie within the lead volume
-        Vol_target = remove_lead_volume2(pat,pat.TargetPoints,head,tail);
-        Vol_constraint = remove_lead_volume2(pat,pat.ConstraintPoints,head,tail);
+        mask_Target = remove_lead_volume2(pat,pat.TargetPoints,head,tail);
+        Vol_target = pat.TargetPoints(mask_Target,:);
+        mask_Constraint = remove_lead_volume2(pat,pat.ConstraintPoints,head,tail);
+        Vol_constraint = pat.ConstraintPoints(mask_Constraint,:);
 
         try
             assert(length(Vol_target)>100)
@@ -226,7 +241,7 @@ for patient=1:length(cohort.patNames)
             %distance_contacts_to_target(pat,Vol_target,head,tail)
 
 
-            fid = fopen(append(pat.outputPath,filesep,'Top_Suggestions_',pat.space,'_',convertStringsToChars(pat.hand),'_',cohort.optischeme,'_','.txt'),'w');
+            fid = fopen(append(pat.outputPath,filesep,'Top_Suggestions_',pat.space,'_',convertStringsToChars(pat.hand),'_',cohort.optischeme,'_',cohort.simulationSettings.tractActivation,'.txt'),'w');
             fprintf(fid,'Contacts \t Target \t Constraint \t Spill \t Alpha \t VTA \t Score\n\n');
             fclose(fid);
 
@@ -235,13 +250,56 @@ for patient=1:length(cohort.patNames)
             pat.FEMCoordinates = InitialSolution.(pat.contactNames{1})(:,1:3);
 
             ActiveContactsCombos = fieldnames(InitialSolution);
-            %VqTarget = zeros(length(Vol_target),length(ActiveContactsCombos));
-            %VqConstraint = zeros(length(Vol_constraint),length(ActiveContactsCombos));
-            for k = 1:length(fieldnames(InitialSolution))
-                field = ActiveContactsCombos{k};
-                F = scatteredInterpolant(InitialSolution.(field)(:,1),InitialSolution.(field)(:,2),InitialSolution.(field)(:,3),InitialSolution.(field)(:,8));
-                VqTarget{k,1} = F(Vol_target(:,1),Vol_target(:,2),Vol_target(:,3));
-                VqConstraint{k,1} = F(Vol_constraint(:,1),Vol_constraint(:,2),Vol_constraint(:,3));
+
+            if contains(cohort.targets{1,1},'tract') & strcmp(cohort.simulationSettings.tractActivation,'fiberwise')
+                %% use pat.Targets and pat.Constraints
+                load([pat.path,filesep,'atlases',filesep,cohort.atlas,filesep,'neurostructures.mat'],'region');
+                Targetfibs = concat_fibertracts(region,pat,cohort.targets,pat.hand);
+                Constraintfibs = concat_fibertracts(region,pat,cohort.constraints,pat.hand);
+
+                mask_Targetfibs = remove_lead_volume2(pat,Targetfibs(:,1:3),head,tail);
+                Targetfibs = Targetfibs(mask_Targetfibs,:);
+                mask_Constraintfibs = remove_lead_volume2(pat,Constraintfibs(:,1:3),head,tail);
+                Constraintfibs = Constraintfibs(mask_Constraintfibs,:);
+
+
+                for k = 1:length(fieldnames(InitialSolution))
+                    field = ActiveContactsCombos{k};
+                    F = scatteredInterpolant(InitialSolution.(field)(:,1),InitialSolution.(field)(:,2),InitialSolution.(field)(:,3),InitialSolution.(field)(:,8));
+                    VqT{k,1} = F(Targetfibs(:,1),Targetfibs(:,2),Targetfibs(:,3));
+                    VqC{k,1} = F(Constraintfibs(:,1),Constraintfibs(:,2),Constraintfibs(:,3));
+
+                    % Only keep the point along each fiber that has the
+                    % highest E-field norm
+                    VqTarget{k,1} = [];
+                    VqTargetCoords{k,1} = [];
+                    for id = min(Targetfibs(:,4)):max(Targetfibs(:,4))
+                        idx = (Targetfibs(:,4) == id);
+                        [~,imax] = max(VqT{k,1}(idx));
+                        selectedIdx = find(idx);
+                        VqTargetCoords{k,1}(end+1,:) = [Targetfibs(selectedIdx(imax),1:3), id];
+                        VqTarget{k,1}(end+1,:) = VqT{k,1}(selectedIdx(imax));
+                    end
+                    
+                    VqConstraint{k,1} = [];
+                    VqConstraintCoords{k,1} = [];
+                    for id = min(Constraintfibs(:,4)):max(Constraintfibs(:,4))
+                        idx = (Constraintfibs(:,4) == id);
+                        [~,imax] = max(VqC{k,1}(idx));
+                        selectedIdx = find(idx);
+                        VqConstraintCoords{k,1}(end+1,:) = [Constraintfibs(selectedIdx(imax),1:3), id];
+                        VqConstraint{k,1}(end+1,:) = [VqC{k,1}(imax)];
+                    end
+                end
+                pat.VqTargetCoords = VqTargetCoords;
+                pat.VqConstraintCoords = VqConstraintCoords;
+            else
+                for k = 1:length(fieldnames(InitialSolution))
+                    field = ActiveContactsCombos{k};
+                    F = scatteredInterpolant(InitialSolution.(field)(:,1),InitialSolution.(field)(:,2),InitialSolution.(field)(:,3),InitialSolution.(field)(:,8));
+                    VqTarget{k,1} = F(Vol_target(:,1),Vol_target(:,2),Vol_target(:,3));
+                    VqConstraint{k,1} = F(Vol_constraint(:,1),Vol_constraint(:,2),Vol_constraint(:,3));
+                end
             end
             pat.VqTarget = VqTarget;
             pat.VqConstraint = VqConstraint;

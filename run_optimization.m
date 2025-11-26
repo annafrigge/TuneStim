@@ -1,15 +1,15 @@
-function [cohort, pat] = run_optimization(cohort,pat,VqTarget,VqConstraint, relaxation,cou,hand)
-
+function [cohort, pat] = run_optimization(cohort,pat,relaxation,cou,hand)
+VqTarget = pat.VqTarget;
+VqConstraint = pat.VqConstraint;
 alpha      = zeros(1,size(cou,1));
 J           = zeros(1,size(cou,1));
-
 
 disp('Optimizing with constraints...')
 options = optimoptions('linprog','Display','none');
 
 %find optimal solution for each contact configuration
 lower_bound = 0;
-upper_bound = 10;
+upper_bound = 6;
 
 if strcmp(cohort.optischeme, 'MILP')
     % Transfer matrices for target and constraint points
@@ -28,7 +28,6 @@ if strcmp(cohort.optischeme, 'MILP')
     % Objective function: we want to maximize VqTarget * x
     % Define it as a handle function to minimize the negative objective.
     idx = ones(length(VqTarget),1);
-    Imax_single = 5;
     for i = 1:length(VqTarget)
         % Objective function (linear)
         f = -VqTarget(i,:);  % Maximize VqTarget*x is equivalent to minimizing -VqTarget*x
@@ -103,10 +102,6 @@ if strcmp(cohort.optischeme, 'MILP')
         cohort.MILP.Nude{pat.patientNo,hand} = {};
         cohort.MILP.focality{pat.patientNo,hand} = {};
     elseif (strcmp(result.status,'FEASIBLE') || strcmp(result.status,'OPTIMAL') || strcmp(result.status,'TIME_LIMIT'))
-        % out.status = result.status;
-        % out.x_milp_g = result.x;
-        %out.x_elastic = x_elastic;
-        %out.fval_g = result.objval;
         cohort.MILP.results{pat.patientNo,hand} = result;
         cohort.MILP.x{pat.patientNo,hand} = result.x;
 
@@ -224,12 +219,16 @@ elseif strcmp(cohort.optischeme,'LP')
         end
     end
 
+elseif strcmp(cohort.optischeme,'MILPbipolar')
+
+
 elseif strcmp(cohort.optischeme,'Nonlinear')
     %% Assigning target values for STN_motor, STN_limbic and internal capsule
     %Enorm_obj_target = [target_coord; ones(length(target_coord),1)*EFobj_target];
     %Enorm_obj_constraint = [constraint_coord; ones(length(target_coord),1)*EFobj_target];
 
     options = optimset('Display','off','LargeScale','off','MaxFunEvals',100,'PlotFcns',@optimplotfval);
+    %options = optimset('Display','off','LargeScale','off','MaxFunEvals',100);
     alpha0 = 1; % initial scaling factor
     for m=1:length(alpha)    
     [alpha(m),J(m)]=fmincon(@(x)fcost(x,...
@@ -295,7 +294,7 @@ function J=fcost(alpha,EFnorm,EFobj)
     %      computation).
     % EFobj = threshold value (electric field norm), (e.g. 200 V/m).
    J=0;
-    if alpha(1)<=0 || alpha(1)>15
+    if alpha(1)<=0 || alpha(1)>6
         J=1e30;
     else
         
@@ -342,7 +341,7 @@ nindex = floor(n*relaxation/100); % floor rounds toward negative infinity
                                % e.g. floor(3.4) = 3, floor(-10,1) = -11
 
 % use the (almost) largest difference as basis for constraint 
-c = [diffs(end-nindex) -alpha alpha-15];
+c = [diffs(end-nindex) -alpha alpha-6];
 
 ceq = [];
 end

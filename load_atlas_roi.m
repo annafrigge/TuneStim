@@ -1,4 +1,4 @@
-function pat = load_atlas_roi(pat,cohort,max,min,head)
+function pat = load_atlas_roi(pat,cohort)
 % This function reads in x,y and z coordinates of target and constraint
 % areas from .csv files.
 
@@ -63,9 +63,7 @@ for t = 1:length(cohort.constraints)
     cohort.constraints{t} = erase(fname, '.gz');
 end
 
-
-
-[target_lst,constraint_lst, atlas_struct] = get_target_and_constraint_coordinates(search_paths, cohort.targets,cohort.constraints,hand,max,min);
+[target_lst,constraint_lst, atlas_struct] = get_target_and_constraint_coordinates(search_paths, cohort.targets,cohort.constraints,hand,pat);
 
 
 
@@ -74,11 +72,18 @@ if cohort.simulationSettings.downsample
     target_roi = [];
     constraint_roi = [];
     for j=1:length(target_lst)
+        if isempty(target_lst{j,1})
+            continue
+        else
         target_roi_pc = pointCloud(target_lst{j,1}(:,1:3));
         target_roi_sampled{j,1} = pcdownsample(target_roi_pc,"gridAverage",cohort.simulationSettings.VoxelFilterSize);
         target_roi = vertcat(target_roi,target_roi_sampled{j,1}.Location);
+        end
     end
     for j=1:length(constraint_lst)
+        if isempty(constraint_lst{j,1})
+            continue
+        end
         constraint_roi_pc = pointCloud(constraint_lst{j,1}(:,1:3));
         constraint_roi_sampled{j,1} = pcdownsample(constraint_roi_pc,"gridAverage",cohort.simulationSettings.VoxelFilterSize);
         constraint_roi = vertcat(constraint_roi,constraint_roi_sampled{j,1}.Location);

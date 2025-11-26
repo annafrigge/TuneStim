@@ -82,6 +82,99 @@ z = randi((size(comb_conductivities,3)));
 index = 1+(x-1)+(y-1)*size(comb_conductivities,1)+(z-1)*size(comb_conductivities,2)*size(comb_conductivities,1);
 assert(conductivities(index) == comb_conductivities(x,y,z))
 
+%% %% Anisotropic conductivity from DTI (ITT)
+% Load the dataC:\Users\annfr888\Documents\MATLAB\leaddbs31\templates\space\MNI152NLin2009bAsym
+dti_path = 'C:\Users\annfr888\Documents\MATLAB\leaddbs31\templates\space\MNI152NLin2009bAsym\IITMeanTensor.nii.gz';%('comsol','anisotropy', 'human_iso.nii.gz');
+nii_tensor = niftiread(dti_path);
+info = niftiinfo(dti_path);
+
+% Extract tensor components (assuming order: Dxx, Dyy, Dzz , Dxy, Dxz,  Dyz)
+D_xx = nii_tensor(:,:,:,1);
+D_xy = nii_tensor(:,:,:,2); 
+D_yy = nii_tensor(:,:,:,3);
+D_xz = nii_tensor(:,:,:,4);
+D_yz = nii_tensor(:,:,:,5);
+D_zz = nii_tensor(:,:,:,6);
+
+% Get coordinate grids (MNI space)
+[nx, ny, nz] = size(D_xx);
+voxel_size = info.PixelDimensions(1:3); % should be 0.5 0.5 0.5 (mm voxel size)
+
+% Create coordinate arrays (MNI coordinates)
+% Typical MNI space: x: -90 to 90, y: -126 to 90, z: -72 to 108
+x = conductivity_map(:,1);
+y = conductivity_map(:,1);
+z = conductivity_map(:,1);
+
+% Save to MAT file
+save('DTI_MNI_template.mat', 'D_xx', 'D_yy', 'D_zz', 'D_xy', 'D_xz', 'D_yz', ...
+     'x', 'y', 'z', 'info');
+
+trace_D = (D_xx + D_yy + D_zz)/3;
+
+fprintf('\nComputing anisotropic conductivity tensor...\n');
+
+comb_conductivities(comb_conductivities==0) = 0.1;
+
+%
+sigma_xx = comb_conductivities .* (D_xx ./ trace_D);
+sigma_yy = comb_conductivities .* (D_yy ./ trace_D);
+sigma_zz = comb_conductivities .* (D_zz ./ trace_D);
+sigma_xy = comb_conductivities .* (D_xy ./ trace_D);
+sigma_xz = comb_conductivities .* (D_xz ./ trace_D);
+sigma_yz = comb_conductivities .* (D_yz ./ trace_D);
+
+fprintf('Checking tensor components:\n');
+fprintf('  sigma_xx: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_xx(:))), sum(isinf(sigma_xx(:))), sum(sigma_xx(:) < 0));
+fprintf('  sigma_yy: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_yy(:))), sum(isinf(sigma_yy(:))), sum(sigma_yy(:) < 0));
+fprintf('  sigma_zz: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_zz(:))), sum(isinf(sigma_zz(:))), sum(sigma_zz(:) < 0));
+fprintf('  sigma_xy: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_xy(:))), sum(isinf(sigma_xy(:))), sum(sigma_xy(:) < 0));
+fprintf('  sigma_xz: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_xz(:))), sum(isinf(sigma_xz(:))), sum(sigma_xz(:) < 0));
+fprintf('  sigma_yz: NaN=%d, Inf=%d, Negative=%d\n', ...
+    sum(isnan(sigma_yz(:))), sum(isinf(sigma_yz(:))), sum(sigma_yz(:) < 0));
+
+% Define half of inhomogeneous box length
+box_length = 3.0*1e-2; %25e-3;
+centre_coord = [0 0 0];
+
+% Single combined filter for GM_xyz coordinates (with box_length radius)
+in_box = all(vecnorm((GM_xyz' - centre_coord),2,2) <= box_length, 2);
+
+% Filter all sigma variables at once
+sigma_xx_filtered = sigma_xx(in_box);
+sigma_yy_filtered = sigma_yy(in_box);
+sigma_zz_filtered = sigma_zz(in_box);
+sigma_xy_filtered = sigma_xy(in_box);
+sigma_xz_filtered = sigma_xz(in_box); 
+sigma_yz_filtered = sigma_yz(in_box);
+
+% Filter coordinates
+GM_xyz_filtered = GM_xyz(:, in_box);  % Note: GM_xyz is already transposed
+
+% Create maps efficiently (pre-allocate if possible, but this is already fast)
+sigma_xx_map = [GM_xyz_filtered', sigma_xx_filtered];
+sigma_yy_map = [GM_xyz_filtered', sigma_yy_filtered];
+sigma_zz_map = [GM_xyz_filtered', sigma_zz_filtered];
+sigma_xy_map = [GM_xyz_filtered', sigma_xy_filtered];
+sigma_xz_map = [GM_xyz_filtered', sigma_xz_filtered];
+sigma_yz_map = [GM_xyz_filtered', sigma_yz_filtered];
+
+% Save all at once using a loop
+sigma_components = {'xx', 'yy', 'zz', 'xy', 'xz', 'yz'};
+sigma_maps = {sigma_xx_map, sigma_yy_map, sigma_zz_map, ...
+              sigma_xy_map, sigma_xz_map, sigma_yz_map};
+
+for i = 1:length(sigma_components)
+    filename = sprintf('sigma_%s_map_full_%s.csv', sigma_components{i}, pat.space);
+    writematrix(sigma_maps{i}, filename);
+end
+
+
 %% extract region of interest
 hands = {"sin","dx"};
 [heads,tails] = get_lead_parameters(pat,hands);
@@ -89,17 +182,18 @@ hands = {"sin","dx"};
 centre_coord = (heads.sin+heads.dx)*0.5;
 
 % define half of inhomogeneous box length
-box_length = 25*1e-3;
-logical = conductivity_map(:,1)>= centre_coord(1)-box_length & conductivity_map(:,1)<= centre_coord(1)+box_length;
-conductivity_map = conductivity_map(logical,:);
+box_length = 25e-3; 
 
-%y
-logical = conductivity_map(:,2)>= centre_coord(2)-box_length & conductivity_map(:,2)<= centre_coord(2)+box_length;
-conductivity_map = conductivity_map(logical,:);
+% Combine all three conditions into one logical array
+in_box = conductivity_map(:,1) >= centre_coord(1) - box_length & ...
+         conductivity_map(:,1) <= centre_coord(1) + box_length & ...
+         conductivity_map(:,2) >= centre_coord(2) - box_length & ...
+         conductivity_map(:,2) <= centre_coord(2) + box_length & ...
+         conductivity_map(:,3) >= centre_coord(3) - box_length & ...
+         conductivity_map(:,3) <= centre_coord(3) + box_length;
 
-%z
-logical = conductivity_map(:,3)>= centre_coord(3)-box_length & conductivity_map(:,3)<= centre_coord(3)+box_length;
-conductivity_map = conductivity_map(logical,:);
+% Filter once
+conductivity_map = conductivity_map(in_box, :);
 
 
 %% set conductivity for all points that were not labelled GM, WM or CSF
@@ -171,3 +265,5 @@ permittivity_map = permittivity_map(logical,:);
 permittivity_map(permittivity_map(:,:)==0) = 13.752*1e4;
 writematrix(permittivity_map,...
            append(pat.path,'permittivity_map_both_hands_',pat.space,'.csv'))
+
+

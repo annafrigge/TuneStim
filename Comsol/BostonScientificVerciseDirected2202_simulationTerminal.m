@@ -2,7 +2,7 @@ function out = model
 %
 % BostonScientificVerciseDirected2202_simulationTerminal.m
 %
-% Model exported on May 28 2025, 20:52 by COMSOL 6.3.0.290.
+% Model exported on Nov 10 2025, 16:08 by COMSOL 6.3.0.290.
 
 import com.comsol.model.*
 import com.comsol.model.util.*
@@ -507,11 +507,6 @@ model.result('pg2').run;
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0*2');
 model.component('comp1').physics('ec').feature('term1').selection.set([14]);
 model.component('comp1').physics('ec').feature('term1').set('I0', 'I0');
-%model.component('comp1').physics('ec').feature.duplicate('term2', 'term1');
-%model.component('comp1').physics('ec').feature('term2').selection.set([38]);
-%model.component('comp1').physics('ec').feature('term2').set('I0', '0.5*I0');
-%model.component('comp1').physics('ec').feature.duplicate('term3', 'term2');
-%model.component('comp1').physics('ec').feature('term3').selection.set([67]);
 
 model.sol('sol1').runAll;
 
@@ -670,101 +665,16 @@ model.component('comp1').view('view1').hideObjects('hide1').add('fin', [1]);
 model.component('comp1').view('view1').hideObjects('hide1').add('fin', [2]);
 
 model.component('comp1').geom('geom1').run('ige1');
-model.component('comp1').geom('geom1').run('cmd1');
 
 model.label('BostonScientificVerciseDirected2202_simulationTerminal.mph');
 
-model.component('comp1').geom('geom1').feature('cyl1').set('r', '6.5e-4+encapsulationThickness');
+model.component('comp1').geom('geom1').geomRep('comsol');
 
-model.param.rename('encR', 'encapsulationThickness');
-
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '6.5*1e-4+encapsulationThickness', 0);
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '6.5*1e-4+encapsulationThickness', 1);
-model.component('comp1').geom('geom1').feature('elp1').setIndex('semiaxes', '0.75*1e-3+encapsulationThickness', 2);
-model.component('comp1').geom('geom1').run('cmd1');
-
-model.component('comp1').view('view1').hideObjects('hide1').add('cmd1', [3]);
-
-model.component('comp1').geom('geom1').runPre('sel_C4X');
-model.component('comp1').geom('geom1').feature.move('sel_C2B', 12);
-model.component('comp1').geom('geom1').runPre('sel_C2C');
-model.component('comp1').geom('geom1').runPre('sel_C3A');
-model.component('comp1').geom('geom1').run('sel_C3C');
-model.component('comp1').geom('geom1').runPre('sel_C4X');
-model.component('comp1').geom('geom1').runPre('sel10');
-model.component('comp1').geom('geom1').run('sel11');
-model.component('comp1').geom('geom1').run('sel11');
-model.component('comp1').geom('geom1').run;
-model.component('comp1').geom('geom1').feature.create('rmd1', 'RemoveDetails');
-model.component('comp1').geom('geom1').feature('rmd1').set('detailsizetype', 'absolute');
-model.component('comp1').geom('geom1').feature('rmd1').set('maxabssize', '1.2E-4');
-model.component('comp1').geom('geom1').run('rmd1');
-model.component('comp1').geom('geom1').feature.remove('rmd1');
+model.label('BostonScientificVerciseDirected2202_simulationTerminal.mph');
 
 model.component('comp1').mesh('mesh1').run;
-
-model.component('comp1').physics('ec').selection.set([]);
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-
-model.component('comp1').physics('ec').selection.set([1]);
-
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-
-model.component('comp1').physics('ec').selection.set([1 2]);
-
-model.component('comp1').view('view1').hideEntities('hide1').add([2]);
-
-model.component('comp1').physics('ec').selection.set([1 2 3]);
-
-model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]);
-model.component('comp1').mesh('mesh1').feature('ftet1').selection.all;
-model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([]);
-model.component('comp1').mesh('mesh1').feature('ftet1').selection.all;
-model.component('comp1').mesh('mesh1').run('ftet1');
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').selection.set([1]);
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').selection.set([2 3 11 12 13]);
-model.component('comp1').mesh('mesh1').run;
-
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').set('hauto', 2);
-model.component('comp1').mesh('mesh1').run('size');
-model.component('comp1').mesh('mesh1').feature('ftet1').feature('size2').set('hauto', 3);
-model.component('comp1').mesh('mesh1').run('ftet1');
-model.component('comp1').mesh('mesh1').run;
-
-model.component('comp1').view('view1').hideEntities('hide1').add([2]);
-model.component('comp1').view('view1').hideObjects.clear;
-model.component('comp1').view('view1').hideEntities.clear;
-model.component('comp1').view('view1').set('transparency', true);
-model.component('comp1').view('view1').hideEntities.create('hide1');
-model.component('comp1').view('view1').hideEntities('hide1').geom(3);
-model.component('comp1').view('view1').hideEntities('hide1').add([1]);
-
+model.component('comp1').mesh('mesh1').feature('ftet1').selection.set([1 2 3 11 12 13]);
 model.component('comp1').mesh('mesh1').feature('ftet1').feature('size1').set('hauto', 1);
-model.component('comp1').mesh('mesh1').run('size');
 model.component('comp1').mesh('mesh1').run;
-
-model.result('pg2').run;
-model.result('pg2').run;
-model.result('pg2').feature('surf2').feature('sel1').selection.named('geom1_sel10');
-model.result('pg2').run;
-model.result('pg2').run;
-
-model.study('std1').createAutoSequences('all');
-
-model.sol('sol1').runAll;
-
-model.result('pg2').run;
-
-mphsave('Comsol/BostonScientificVerciseDirected2202_simulationTerminal.mph')
 
 out = model;

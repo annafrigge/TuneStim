@@ -1,4 +1,4 @@
-function [target,constraint,atlas_struct] = get_target_and_constraint_coordinates(search_paths,target_name,constraint_name,hand,max,min)
+function [target,constraint,atlas_struct] = get_target_and_constraint_coordinates(search_paths,target_name,constraint_name,hand,pat)
 
 if strcmp(hand,'lh')
     side = 1;
@@ -53,7 +53,7 @@ for k = 1:numel(S)
             name=S(k).name;%append(S(k).name,'.gz');
 
             volumeInfo=spm_vol(fnm);
-            [intensityValues,xyzCoordinates ]=spm_read_vols(volumeInfo);
+            [intensityValues,xyzCoordinates ] = spm_read_vols(volumeInfo);
         
             % change units from mm to m
             
@@ -93,16 +93,16 @@ for k = 1:numel(S)
             end
             
         end
-            
       
+        zCorr = 0;
            if any(strcmp(S(k).name,target_name))
                
                 r = region(region(:,4)>=1e-3,:);
                 
-                %remove rows not within max-min-interval
-                logx = (r(:,1) <= max(1)) & (r(:,1) >= min(1));
-                logy = (r(:,2) <= max(2)) & (r(:,2) >= min(2));
-                logz = (r(:,3) <= max(3)) & (r(:,3) >= min(3));
+                % remove rows not within max-min-interval
+                logx = (r(:,1) <= pat.maxPoint(1)) & (r(:,1) >= pat.minPoint(1));
+                logy = (r(:,2) <= pat.maxPoint(2)) & (r(:,2) >= pat.minPoint(2));
+                logz = (r(:,3) <= pat.maxPoint(3)-zCorr) & (r(:,3) >= pat.minPoint(3));
                 roi = r(logx & logy & logz,:); 
                 
                 
@@ -119,9 +119,9 @@ for k = 1:numel(S)
                 r =  region(region(:,4)>=1e-3,:);
 
                 %remove rows not within max-min-interval
-                logx = (r(:,1) <= max(1)) & (r(:,1) >= min(1));
-                logy = (r(:,2) <= max(2)) & (r(:,2) >= min(2));
-                logz = (r(:,3) <= max(3)) & (r(:,3) >= min(3));
+                logx = (r(:,1) <= pat.maxPoint(1)) & (r(:,1) >= pat.minPoint(1));
+                logy = (r(:,2) <= pat.maxPoint(2)) & (r(:,2) >= pat.minPoint(2));
+                logz = (r(:,3) <= pat.maxPoint(3))-zCorr & (r(:,3) >= pat.minPoint(3));
                 roi = r(logx & logy & logz,:);
                 
                 if ~isempty(r)

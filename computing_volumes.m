@@ -1,5 +1,5 @@
 function [pAct,pSpill,VTA] = ...
-      computing_volumes(pat,head,tail,VEFStjude,roi_lst,cohort)
+      computing_volumes(pat,head,tail,Vq,roi_lst,cohort)
 % Compute coverage and spill of rois
 
 % Input Arguments
@@ -19,12 +19,19 @@ pAct = zeros(length(alpha),1);
 pSpill = zeros(length(alpha),1);
 VTA = zeros(length(alpha),1);
 
-    %parfor(m = 1:length(alpha),cohort.threads)
+
+if contains(cohort.targets{1,1},'tract') & strcmp(cohort.simulationSettings.tractActivation,'fiberwise')
     for m=1:length(alpha)
-        EF = scaleEF(VEFStjude{m},alpha(m));
-        [pAct(m),pSpill(m),VTA(m)] = volume_of_tissue_activated(EF,roi_lst,R,head,leadvector,cohort.EThreshold);
-       
+        pAct(m) = sum(Vq{m,1}*alpha(m) > cohort.EThreshold)/length(Vq{m,1});
+        pSpill(m) = 0;
+        VTA(m) = NaN;
     end
+else
+    for m=1:length(alpha)
+        EF = scaleEF(Vq{m},alpha(m));
+        [pAct(m),pSpill(m),VTA(m)] = volume_of_tissue_activated(EF,roi_lst,R,head,leadvector,cohort.EThreshold);
+    end
+end
 
 end
 

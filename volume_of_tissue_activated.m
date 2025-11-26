@@ -32,9 +32,6 @@ function [pActRoi,pActSpill,VTA] = volume_of_tissue_activated(EF,roi_lst,Rotatio
 %% Get total number of activated points 
 % EF_activated contains all point with E-field larger than activation 
 % threshold * safetyMargin
-
-
-
 if isstruct(EF)
     is_activated = (EF.d4'>isolevel & ~isnan(EF.d4'));
     EF_activated = [EF.d1(is_activated)',EF.d2(is_activated)',EF.d3(is_activated)'];
@@ -96,8 +93,6 @@ for m=1:Nm
     PointsActRoi = PointsActRoi + sum(roi_in_VTA);
     PointsTotalRoi = PointsTotalRoi + length(Vpoints);
 
-
-
     % test how many activated points lie in roi - rest is spill
     is_in_roi = inhull(EF_activated,Vpoints(:,1:3)); 
     A_in_roi = EF_activated(is_in_roi,:);
@@ -112,24 +107,23 @@ for m=1:Nm
     Vol_total_roi = Vol_total_roi + VolRoiMinusLead;
 
     ActPointsInRoi = ActPointsInRoi + sum(is_in_roi);
-
 end
 
 
 
 %% compute activation percentages
 %percentage of roi activation
-%p_act = ( VolActivatedRoi/Vol_total_roi );
-%p_spill = ( volActivatedMinusLead - VolActivatedRoi )/volActivatedMinusLead;
-pActRoi = sum(PointsActRoi)/PointsTotalRoi;
-%disp(append('Percentage of ROI activation: ', num2str(pActRoi*100)))
 
-pActSpill = (length(EF_activated)-ActPointsInRoi)/length(EF_activated);
+    %p_act = ( VolActivatedRoi/Vol_total_roi );
+    %p_spill = ( volActivatedMinusLead - VolActivatedRoi )/volActivatedMinusLead;
+    pActRoi = sum(PointsActRoi)/PointsTotalRoi;
 
-%disp(append('Spill percentage: ', num2str(pActSpill*100)))
+    pActSpill = (length(EF_activated)-ActPointsInRoi)/length(EF_activated);
 
-VTA = volActivatedMinusLead*10^9;
+
+    VTA = volActivatedMinusLead*10^9;
 end
+
 
 
 function vol_minus_lead = volume_remove_lead(Vpoints,volume,Rotation,head,leadvector)

@@ -1,4 +1,3 @@
-
 function [] = write_lead_parameters_to_txt(pat, A_shell_tot,...
                                            A_shell_seg, head,...
                                            tail, axis, orientation,...
@@ -14,9 +13,9 @@ fprintf(fileID,'%6s  %9.7f\r\n','head_x',head(1));
 fprintf(fileID,'%6s  %9.7f\r\n','head_y',head(2));
 fprintf(fileID,'%6s  %9.7f\r\n','head_z',head(3));
 if isfield(pat,'orientation')
-    fprintf(fileID,'%11s %9.7f\r\n','orientation',orientation);
+    fprintf(fileID,'%11s  %9.7f\r\n','orientation',orientation);
 else
-    fprintf(fileID,'%11s %9.7f\r\n','orientation',0);
+    fprintf(fileID,'%11s  %9.7f\r\n','orientation',0);
 end
 fprintf(fileID,'%6s  %9.7f\r\n','tail_x',tail(1));
 fprintf(fileID,'%6s  %9.7f\r\n','tail_y',tail(2));

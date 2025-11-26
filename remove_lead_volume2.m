@@ -1,4 +1,4 @@
-function volume_outside = remove_lead_volume2(pat,V,head,tail)
+function mask_outside = remove_lead_volume2(pat,V,head,tail)
 % A function that generates a matrix with coordinates outside a lead, defined by the head and tail, lead radius and length
 % first, the rotation matrix to get to the lead coordinate system is
 % generated. Using this matrix a point in V is rotated from the coordinate
@@ -39,23 +39,29 @@ z_cyl = 0.1;
 
 i=1;
 j=1;
-volume_inside = [];
+%volume_inside = [];
 volume_outside = [];
+  mask_outside = false(size(V,1),1);
+
 for row=1:length(V(:,1))
     P = (Rotation'*(V(row,1:3)- translation_factor)')';
     [theta,rho,z] = cart2pol(P(1),P(2),P(3));
+
+            if ~(rho <= R_cyl && z <= z_cyl && z >= 0)
+            mask_outside(row) = true;  % keep this point
+        end
     
-    if rho <= R_cyl && z <= z_cyl && z >= 0
-        volume_inside(i,:) = V(row,:);
-        i=i+1;
-    else
-        volume_outside(j,:)=V(row,:);
-        j=j+1;
-    end
+    % if rho <= R_cyl && z <= z_cyl && z >= 0
+    %     volume_inside(i,:) = V(row,:);
+    %     i=i+1;
+    % else
+    %     volume_outside(j,:)=V(row,:);
+    %     j=j+1;
+    % end
 
 end
 
-assert(length(volume_outside)>3);
+assert(sum(mask_outside)>3);
 
 %plot inside points and cylinder
 % try
